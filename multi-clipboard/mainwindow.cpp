@@ -27,8 +27,7 @@ void MainWindow::timer()
     QClipboard *clipboard = QGuiApplication::clipboard();
     QString plainClipboard = clipboard->text( plain );
     ui->label->setText( plainClipboard );
-    qDebug() << "aaa";
-    //int move=0;
+
     int i;
     for( i=numStore; i<numStore+numHist-1; ++i )
     {
@@ -37,10 +36,9 @@ void MainWindow::timer()
             break;
         }
     }
-    qDebug() << i;
+
     for( int j=i; j>numStore; --j )
     {
-        qDebug() << j;
         ((QLabel *)(ui->gridLayout->itemAtPosition( j, 1 )->widget()))->setText(
             ((QLabel *)(ui->gridLayout->itemAtPosition( j-1, 1 )->widget()))->text()
                                                                                );
@@ -71,14 +69,9 @@ void MainWindow::createLayout()
                 &MainWindow::getClicked
                 );
 
-
-
         ui->gridLayout->addWidget(label, i, 1);
 
-
         ui->gridLayout->addWidget(setButton, i, 2);
-
-
 
         connect(setButton,
                 &QPushButton::clicked,
@@ -106,7 +99,6 @@ void MainWindow::setClicked()
     QString name = ((QPushButton *)QObject::sender())->text().mid(setText.size());
     int row = name.toInt();
 
-    QString plain( "plain" );
     QClipboard *clipboard = QGuiApplication::clipboard();
 
     QString plainClipboard = ((QLabel *)(ui->gridLayout->itemAtPosition( row, 1 )->widget()))->text();

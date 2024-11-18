@@ -3,7 +3,9 @@
 #include <QVector>
 #include <QDebug>
 #include <QClipboard>
-#include <QTimer>
+#include <QString>
+#include <QPushButton>
+#include <QLabel>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -13,15 +15,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     createLayout();
 
-    QTimer *timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, &MainWindow::timer);
-    timer->start(1000);
+    connect(QGuiApplication::clipboard(), &QClipboard::dataChanged, this, &MainWindow::clipboardChanged);
+    clipboardChanged();
 }
-#include <QString>
-#include <QPushButton>
-#include <QLabel>
 
-void MainWindow::timer()
+void MainWindow::clipboardChanged()
 {
     QString plain( "plain" );
     QClipboard *clipboard = QGuiApplication::clipboard();
@@ -41,7 +39,7 @@ void MainWindow::timer()
     {
         ((QLabel *)(ui->gridLayout->itemAtPosition( j, 1 )->widget()))->setText(
             ((QLabel *)(ui->gridLayout->itemAtPosition( j-1, 1 )->widget()))->text()
-                                                                               );
+            );
     }
     ((QLabel *)(ui->gridLayout->itemAtPosition( numStore, 1 )->widget()))->setText( plainClipboard );
 }

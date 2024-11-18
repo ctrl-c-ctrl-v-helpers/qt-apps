@@ -20,8 +20,7 @@ public:
 public slots:
     void getClicked();
     void setClicked();
-    void timer();
-
+    void clipboardChanged();
 private:
     const int numStore = 10;
     const int numHist = 10;

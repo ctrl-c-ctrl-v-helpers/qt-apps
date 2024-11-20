@@ -84,11 +84,12 @@ void MainWindow::createLayout()
 
 void MainWindow::setColorTheme()
 {
-    QString buttonStyle = QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark ?
-                              "QPushButton { color : yellow; }" : "QPushButton { color : blue; }";
 
-    QString labelStyle = QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark ?
-                             "QLabel { color : yellow; }" : "QLabel { color : blue; }";
+    QString textColor = QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark ?
+                            "yellow" : "blue";
+
+    QString buttonStyle = QString("QPushButton { color : %1; }").arg(textColor);
+    QString labelStyle = QString("QLabel { color : %1; }").arg(textColor);
 
     for (auto label : labels)
         label->setStyleSheet(labelStyle);

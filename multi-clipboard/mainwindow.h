@@ -22,8 +22,6 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    QLabel * storedLabel(int i);
-
 public slots:
     void getClicked();
     void setClicked();
@@ -49,5 +47,6 @@ private:
 
     void setColorTheme();
     QLabel* historyLabel(int i);
+    QLabel* storedLabel(int i);
 };
 #endif // MAINWINDOW_H

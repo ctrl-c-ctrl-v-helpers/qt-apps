@@ -9,6 +9,10 @@
 #include <QStyleHints>
 #include <QCheckBox>
 
+#ifdef Q_OS_WINDOWS
+#include <windows.h>
+#endif
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -50,8 +54,10 @@ void MainWindow::clipboardChanged()
 
 void MainWindow::checkAlwaysOnTopStateChanged(Qt::CheckState state)
 {
-#ifndef Q_OS_MACOS
-    this->setWindowFlag(Qt::WindowStaysOnTopHint, state == Qt::CheckState::Checked);
+#ifdef Q_OS_WINDOWS
+    // setWindowFlag(Qt::WindowStaysOnTopHint); doesn't work
+    SetWindowPos((HWND)this->winId(), state == Qt::CheckState::Checked ? HWND_TOPMOST : HWND_NOTOPMOST,
+                    0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 #endif
 }
 

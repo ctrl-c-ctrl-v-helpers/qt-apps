@@ -7,6 +7,7 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QStyleHints>
+#include <QCheckBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -17,6 +18,8 @@ MainWindow::MainWindow(QWidget *parent)
     createLayout();
 
     connect(QGuiApplication::clipboard(), &QClipboard::dataChanged, this, &MainWindow::clipboardChanged);
+    connect(ui->checkAlwaysOnTop, &QCheckBox::checkStateChanged,this, &MainWindow::checkAlwaysOnTopStateChanged);
+
     clipboardChanged();
 }
 
@@ -43,6 +46,13 @@ void MainWindow::clipboardChanged()
             );
     }
     ((QLabel *)(ui->gridLayout->itemAtPosition( numStore, 1 )->widget()))->setText( plainClipboard );
+}
+
+void MainWindow::checkAlwaysOnTopStateChanged(Qt::CheckState state)
+{
+#ifndef Q_OS_MACOS
+    this->setWindowFlag(Qt::WindowStaysOnTopHint, state == Qt::CheckState::Checked);
+#endif
 }
 
 void MainWindow::createLayout()

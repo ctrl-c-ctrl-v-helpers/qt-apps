@@ -11,6 +11,7 @@ class MainWindow;
 }
 class QPushButton;
 class QLabel;
+class QCheckBox;
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
@@ -25,6 +26,7 @@ public slots:
     void getClicked();
     void setClicked();
     void clipboardChanged();
+    void checkAlwaysOnTopStateChanged(Qt::CheckState state);
 private:
     const int numStore = 10;
     const int numHist = 10;

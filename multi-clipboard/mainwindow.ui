@@ -21,9 +21,9 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>30</y>
+      <y>60</y>
       <width>351</width>
-      <height>801</height>
+      <height>771</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout"/>
@@ -57,6 +57,19 @@
     </property>
     <property name="text">
      <string>Clipboard:</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkAlwaysOnTop">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>40</y>
+      <width>111</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Aways on top</string>
     </property>
    </widget>
   </widget>

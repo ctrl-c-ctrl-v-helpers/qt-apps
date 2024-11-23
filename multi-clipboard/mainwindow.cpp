@@ -159,13 +159,12 @@ std::vector<QString> MainWindow::getHistory()
     return history;
 }
 
-
 void MainWindow::setStored(const std::vector<QString> &stored)
 {
     for(int i=0; i<numStore; ++i)
     {
         QLabel* label = storedLabel(i);
-        if (i < stored.size())
+        if (i < (int)stored.size())
             label->setText(stored.at(i));
     }
 }
@@ -175,7 +174,7 @@ void MainWindow::setHistory(const std::vector<QString> &history)
     for(int i=0; i<numHist; ++i)
     {
         QLabel* label = historyLabel(i);
-        if (i < history.size())
+        if (i < (int)history.size())
             label->setText(history.at(i));
     }
 }

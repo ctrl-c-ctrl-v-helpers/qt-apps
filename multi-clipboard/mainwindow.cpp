@@ -50,8 +50,6 @@ void MainWindow::clipboardChanged()
             );
     }
     ((QLabel *)(ui->gridLayout->itemAtPosition( numStore, 1 )->widget()))->setText( plainClipboard );
-
-    repaint();
 }
 
 void MainWindow::checkAlwaysOnTopStateChanged(Qt::CheckState state)

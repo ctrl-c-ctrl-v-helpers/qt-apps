@@ -23,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(QGuiApplication::clipboard(), &QClipboard::dataChanged, this, &MainWindow::clipboardChanged);
     connect(ui->checkAlwaysOnTop, &QCheckBox::checkStateChanged,this, &MainWindow::checkAlwaysOnTopStateChanged);
-
+    connect(ui->swapButton, &QPushButton::clicked, this, &MainWindow::swapClicked);
     clipboardChanged();
 }
 
@@ -50,6 +50,8 @@ void MainWindow::clipboardChanged()
             );
     }
     ((QLabel *)(ui->gridLayout->itemAtPosition( numStore, 1 )->widget()))->setText( plainClipboard );
+
+    repaint();
 }
 
 void MainWindow::checkAlwaysOnTopStateChanged(Qt::CheckState state)
@@ -125,6 +127,60 @@ void MainWindow::changeEvent(QEvent *event)
     }
 }
 
+QLabel * MainWindow::storedLabel(int i)
+{
+    QLabel* label = ((QLabel *)((ui->gridLayout->itemAtPosition(i, 1)->widget())));
+    return label;
+}
+
+QLabel* MainWindow::historyLabel(int i)
+{
+    QLabel* label = ((QLabel *)((ui->gridLayout->itemAtPosition(i+numStore, 1)->widget())));
+    return label;
+}
+
+std::vector<QString> MainWindow::getStored()
+{
+    std::vector<QString> stored;
+    for(int i=0; i<numStore; ++i)
+    {
+        QLabel* label = storedLabel(i);
+        stored.push_back(label->text());
+    }
+    return stored;
+}
+
+std::vector<QString> MainWindow::getHistory()
+{
+    std::vector<QString> history;
+    for(int i=0; i<numHist; ++i)
+    {
+        QLabel* label = historyLabel(i);
+        history.push_back(label->text());
+    }
+    return history;
+}
+
+
+void MainWindow::setStored(const std::vector<QString> &stored)
+{
+    for(int i=0; i<numStore; ++i)
+    {
+        QLabel* label = storedLabel(i);
+        label->setText(stored.at(i));
+    }
+}
+
+void MainWindow::setHistory(const std::vector<QString> &history)
+{
+    for(int i=0; i<numHist; ++i)
+    {
+        QLabel* label = historyLabel(i);
+        label->setText(history.at(i));
+    }
+}
+
+
 void MainWindow::getClicked()
 {
     QString name = ((QPushButton *)QObject::sender())->text().mid(getText.size());
@@ -148,6 +204,14 @@ void MainWindow::setClicked()
 
     clipboard->setText( plainClipboard );
 
+}
+
+void MainWindow::swapClicked()
+{
+    std::vector<QString> history = getHistory();
+    std::vector<QString> stored = getStored();
+    setHistory(stored);
+    setStored(history);
 }
 
 MainWindow::~MainWindow()

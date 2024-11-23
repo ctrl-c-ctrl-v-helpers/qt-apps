@@ -22,9 +22,12 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    QLabel * storedLabel(int i);
+
 public slots:
     void getClicked();
     void setClicked();
+    void swapClicked();
     void clipboardChanged();
     void checkAlwaysOnTopStateChanged(Qt::CheckState state);
 private:
@@ -39,6 +42,12 @@ private:
     void createLayout();
     virtual void changeEvent(QEvent * event);
 
+    std::vector<QString> getStored();
+    std::vector<QString> getHistory();
+    void setStored(const std::vector<QString>& stored);
+    void setHistory(const std::vector<QString>& history);
+
     void setColorTheme();
+    QLabel* historyLabel(int i);
 };
 #endif // MAINWINDOW_H

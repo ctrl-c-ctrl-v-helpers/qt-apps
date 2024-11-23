@@ -72,6 +72,25 @@
      <string>Aways on top</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="swapButton">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>30</y>
+      <width>61</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Swap</string>
+    </property>
+    <property name="icon">
+     <iconset theme="QIcon::ThemeIcon::SyncSynchronizing"/>
+    </property>
+    <property name="flat">
+     <bool>false</bool>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>

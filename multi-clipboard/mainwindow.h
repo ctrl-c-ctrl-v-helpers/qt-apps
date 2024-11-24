@@ -11,6 +11,7 @@ class MainWindow;
 }
 class QPushButton;
 class QLabel;
+class QCheckBox;
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
@@ -24,7 +25,9 @@ public:
 public slots:
     void getClicked();
     void setClicked();
+    void swapClicked();
     void clipboardChanged();
+    void checkAlwaysOnTopStateChanged(Qt::CheckState state);
 private:
     const int numStore = 10;
     const int numHist = 10;
@@ -37,6 +40,13 @@ private:
     void createLayout();
     virtual void changeEvent(QEvent * event);
 
+    std::vector<QString> getStored();
+    std::vector<QString> getHistory();
+    void setStored(const std::vector<QString>& stored);
+    void setHistory(const std::vector<QString>& history);
+
     void setColorTheme();
+    QLabel* historyLabel(int i);
+    QLabel* storedLabel(int i);
 };
 #endif // MAINWINDOW_H

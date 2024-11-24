@@ -7,6 +7,11 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QStyleHints>
+#include <QCheckBox>
+
+#ifdef Q_OS_WINDOWS
+#include <windows.h>
+#endif
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -17,6 +22,8 @@ MainWindow::MainWindow(QWidget *parent)
     createLayout();
 
     connect(QGuiApplication::clipboard(), &QClipboard::dataChanged, this, &MainWindow::clipboardChanged);
+    connect(ui->checkAlwaysOnTop, &QCheckBox::checkStateChanged,this, &MainWindow::checkAlwaysOnTopStateChanged);
+    connect(ui->swapButton, &QPushButton::clicked, this, &MainWindow::swapClicked);
     clipboardChanged();
 }
 
@@ -43,6 +50,15 @@ void MainWindow::clipboardChanged()
             );
     }
     ((QLabel *)(ui->gridLayout->itemAtPosition( numStore, 1 )->widget()))->setText( plainClipboard );
+}
+
+void MainWindow::checkAlwaysOnTopStateChanged(Qt::CheckState state)
+{
+#ifdef Q_OS_WINDOWS
+    // setWindowFlag(Qt::WindowStaysOnTopHint); doesn't work
+    SetWindowPos((HWND)this->winId(), state == Qt::CheckState::Checked ? HWND_TOPMOST : HWND_NOTOPMOST,
+                    0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+#endif
 }
 
 void MainWindow::createLayout()
@@ -109,6 +125,61 @@ void MainWindow::changeEvent(QEvent *event)
     }
 }
 
+QLabel * MainWindow::storedLabel(int i)
+{
+    QLabel* label = ((QLabel *)((ui->gridLayout->itemAtPosition(i, 1)->widget())));
+    return label;
+}
+
+QLabel* MainWindow::historyLabel(int i)
+{
+    QLabel* label = ((QLabel *)((ui->gridLayout->itemAtPosition(i+numStore, 1)->widget())));
+    return label;
+}
+
+std::vector<QString> MainWindow::getStored()
+{
+    std::vector<QString> stored;
+    for(int i=0; i<numStore; ++i)
+    {
+        QLabel* label = storedLabel(i);
+        stored.push_back(label->text());
+    }
+    return stored;
+}
+
+std::vector<QString> MainWindow::getHistory()
+{
+    std::vector<QString> history;
+    for(int i=0; i<numHist; ++i)
+    {
+        QLabel* label = historyLabel(i);
+        history.push_back(label->text());
+    }
+    return history;
+}
+
+void MainWindow::setStored(const std::vector<QString> &stored)
+{
+    for(int i=0; i<numStore; ++i)
+    {
+        QLabel* label = storedLabel(i);
+        if (i < (int)stored.size())
+            label->setText(stored.at(i));
+    }
+}
+
+void MainWindow::setHistory(const std::vector<QString> &history)
+{
+    for(int i=0; i<numHist; ++i)
+    {
+        QLabel* label = historyLabel(i);
+        if (i < (int)history.size())
+            label->setText(history.at(i));
+    }
+}
+
+
 void MainWindow::getClicked()
 {
     QString name = ((QPushButton *)QObject::sender())->text().mid(getText.size());
@@ -132,6 +203,14 @@ void MainWindow::setClicked()
 
     clipboard->setText( plainClipboard );
 
+}
+
+void MainWindow::swapClicked()
+{
+    std::vector<QString> history = getHistory();
+    std::vector<QString> stored = getStored();
+    setHistory(stored);
+    setStored(history);
 }
 
 MainWindow::~MainWindow()

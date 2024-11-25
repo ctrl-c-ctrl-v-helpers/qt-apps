@@ -8,6 +8,8 @@
 #include <QLabel>
 #include <QStyleHints>
 #include <QCheckBox>
+#include <QResizeEvent>
+#include <algorithm>
 
 #ifdef Q_OS_WINDOWS
 #include <windows.h>
@@ -115,6 +117,17 @@ void MainWindow::setColorTheme()
 
     for (auto setButton : setButtons)
         setButton->setStyleSheet(buttonStyle);
+}
+
+void MainWindow::resizeEvent(QResizeEvent* event)
+{
+    int margin = 20;
+    int yoff = ui->gridLayoutWidget->pos().y() + margin;
+    int h = std::max( event->size().height() - yoff, 500);
+    int w = std::max( event->size().width() - margin, 150);
+
+    ui->gridLayoutWidget->setFixedSize(w, h);
+    QMainWindow::resizeEvent(event);
 }
 
 void MainWindow::changeEvent(QEvent *event)

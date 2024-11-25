@@ -39,6 +39,7 @@ private:
     Ui::MainWindow *ui;
     void createLayout();
     virtual void changeEvent(QEvent * event);
+    void resizeEvent(QResizeEvent* event);
 
     std::vector<QString> getStored();
     std::vector<QString> getHistory();

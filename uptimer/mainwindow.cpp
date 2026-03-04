@@ -48,8 +48,14 @@ void MainWindow::tick()
     {
         hide();
     }
+    QColor gold( 255, 215, 0);
+    QColor black( 0, 0, 0);
+    QColor green( 10, 230, 168);
+    QColor red( 255, 0, 0);
+    QColor background;
+    QString iconText;
+    int fontSize;
     int allMins = allSeconds / 60;
-    allMins %= 100;
 
     int secs = allSeconds % 60;
     allSeconds = allSeconds / 60;
@@ -59,21 +65,48 @@ void MainWindow::tick()
 
     int hours=allSeconds;
 
+    if( allMins < 100 )
+    {
+        allMins %= 100;
+        fontSize = 9;
+        background=green;
+        iconText=QString("%1").arg(allMins, 2, 10, '0');
+    }
+    else
+    {
+        if( hours < 8 )
+        {
+            background=gold;
+        }
+        else
+        {
+            background=red;
+        }
+        if( hours < 10 )
+        {
+            fontSize = 8;
+        }
+        else
+        {
+            fontSize = 7;
+        }
+        iconText=QString("%1:%2").arg(hours).arg(mins/10);
+    }
+
     QString text = QString("%1:%2:%3").arg(hours, 2, 10, '0').arg(mins, 2, 10, '0').arg(secs, 2, 10, '0');
 
     ui->lcdNumber->display( text );
     this->setWindowTitle( QString("Czas pracy: ") + text );
 
-
     QImage image(16, 16, QImage::Format_RGB32);
-    image.fill(QColor( 255, 215, 0));
+    image.fill( background );
     QPainter writer(&image);
 
     writer.setRenderHint(QPainter::Antialiasing, false);
-    writer.setFont( QFont( "Serif", 9 ) );
-    writer.setPen( QColor( 0, 0, 0) );
+    writer.setFont( QFont( "Serif", fontSize ) );
+    writer.setPen( black );
 
-    writer.drawText( image.rect(), Qt::AlignCenter, QString("%1").arg(allMins, 2, 10, '0'));
+    writer.drawText( image.rect(), Qt::AlignCenter, iconText);
 
     QPoint point;
 

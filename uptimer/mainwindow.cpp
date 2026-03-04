@@ -16,6 +16,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    ui->lcdNumber->display("00:00:00");
+
     QTimer *timer = new QTimer(this);
     timer->setInterval(200);
     connect(timer, &QTimer::timeout, this, &MainWindow::tick);
@@ -35,10 +37,15 @@ MainWindow::~MainWindow()
 
 void MainWindow::tick()
 {
+    tickf(false);
+}
+
+void MainWindow::tickf( bool forceUpdate )
+{
     QDateTime now = QDateTime::currentDateTime();
     int allSeconds = start.secsTo(now);
 
-    if( oldSeconds == allSeconds )
+    if( (!forceUpdate) && (oldSeconds == allSeconds) )
     {
         return;
     }
@@ -93,10 +100,12 @@ void MainWindow::tick()
         iconText=QString("%1:%2").arg(hours).arg(mins/10);
     }
 
-    QString text = QString("%1:%2:%3").arg(hours, 2, 10, '0').arg(mins, 2, 10, '0').arg(secs, 2, 10, '0');
-
-    ui->lcdNumber->display( text );
-    this->setWindowTitle( QString("Czas pracy: ") + text );
+    if( (! isHidden()) || forceUpdate )
+    {
+        QString text = QString("%1:%2:%3").arg(hours, 2, 10, '0').arg(mins, 2, 10, '0').arg(secs, 2, 10, '0');
+        ui->lcdNumber->display( text );
+        this->setWindowTitle( QString("Czas pracy: ") + text );
+    }
 
     QImage image(16, 16, QImage::Format_RGB32);
     image.fill( background );
@@ -150,6 +159,7 @@ void MainWindow::clicked()
 {
     if( isHidden() )
     {
+        tickf( true );
         show();
     }
     else

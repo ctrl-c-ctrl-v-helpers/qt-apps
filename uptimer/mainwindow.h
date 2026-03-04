@@ -26,6 +26,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     void tick();
+    void tickf(bool forceUpdate );
     QDateTime start;
 
     QSystemTrayIcon *trayIcon;

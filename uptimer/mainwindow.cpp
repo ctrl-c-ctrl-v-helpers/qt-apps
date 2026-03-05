@@ -165,6 +165,9 @@ void MainWindow::clicked()
     {
         tickf( true );
         show();
+        setWindowState(windowState() & ~Qt::WindowMinimized | Qt::WindowActive);
+        raise();
+        activateWindow();
     }
     else
     {

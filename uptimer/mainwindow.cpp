@@ -6,6 +6,7 @@
 #include <QPixmap>
 #include <QPainter>
 #include <QDebug>
+#include <QInputDialog>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -171,5 +172,58 @@ void MainWindow::clicked()
 void MainWindow::on_pushButton_clicked()
 {
    hide();
+}
+
+
+void MainWindow::on_pushButton_2_clicked()
+{
+    bool ok=false;
+    QString text = QInputDialog::getText(this,
+                                         "Podaj nowy czas pracy",
+                                         "Podaj nowy czas pracy w formacie\n{minuty} lub {godziny}h{minuty} lub {godziny}h\nnp.: 30 lub 1h20 lub 3h",
+                                         QLineEdit::Normal,
+                                         "0",
+                                         &ok);
+    if( ! ok )
+    {
+        return;
+    }
+
+    QStringList list = text.split('h');
+    int hours=0;
+    int mins=0;
+    if( list.size() == 2 )
+    {
+        hours=list[0].toInt( &ok );
+        if( (! ok) || hours < 0)
+        {
+            return;
+        }
+        if( list[1].size() == 0 )
+        {
+            mins = 0;
+        }
+        else
+        {
+            mins=list[1].toInt( &ok );
+            if( (! ok) || mins < 0 )
+            {
+                return;
+            }
+        }
+    }
+    if( list.size() == 1 )
+    {
+        mins=list[0].toInt( &ok );
+        if( (! ok) || mins < 0 )
+        {
+            return;
+        }
+    }
+    int secs=hours*60*60 + mins*60;
+
+    QDateTime now = QDateTime::currentDateTime();
+    start = now.addSecs( -secs );
+    tickf( true );
 }
 

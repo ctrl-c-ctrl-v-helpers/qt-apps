@@ -152,7 +152,10 @@ void MainWindow::tickf( bool forceUpdate )
     QIcon icon = QPixmap::fromImage(image);
 
     trayIcon->setIcon( icon );
-    setWindowIcon( icon );
+    if( (! isHidden()) || forceUpdate )
+    {
+        setWindowIcon( icon );
+    }
 }
 
 

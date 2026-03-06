@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
     , start(QDateTime::currentDateTime())
     , trayIcon( new QSystemTrayIcon(this))
     , oldSeconds( -1 )
+    , image(16, 16, QImage::Format_RGB32)
 {
     ui->setupUi(this);
 
@@ -21,12 +22,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     QTimer *timer = new QTimer(this);
     timer->setInterval(200);
-    connect(timer, &QTimer::timeout, this, &MainWindow::tick);
+    connect(timer, &QTimer::timeout, this, &MainWindow::timerTimeout);
     timer->start();
 
     connect(trayIcon, &QSystemTrayIcon::activated, this, &MainWindow::clicked);
 
-    tick();
+    timerTimeout();
 
     trayIcon->show();
 }
@@ -36,12 +37,12 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::tick()
+void MainWindow::timerTimeout()
 {
-    tickf(false);
+    timeStep(false);
 }
 
-void MainWindow::tickf( bool forceUpdate )
+void MainWindow::timeStep( bool forceUpdate )
 {
     QDateTime now = QDateTime::currentDateTime();
     int allSeconds = start.secsTo(now);
@@ -56,10 +57,7 @@ void MainWindow::tickf( bool forceUpdate )
     {
         hide();
     }
-    QColor gold( 255, 215, 0);
-    QColor black( 0, 0, 0);
-    QColor green( 10, 230, 168);
-    QColor red( 255, 0, 0);
+
     QColor background;
     QString iconText;
     int fontSize;
@@ -90,6 +88,7 @@ void MainWindow::tickf( bool forceUpdate )
         {
             background=red;
         }
+
         if( hours < 10 )
         {
             fontSize = 8;
@@ -98,6 +97,7 @@ void MainWindow::tickf( bool forceUpdate )
         {
             fontSize = 7;
         }
+
         iconText=QString("%1:%2").arg(hours).arg(mins/10);
     }
 
@@ -108,7 +108,6 @@ void MainWindow::tickf( bool forceUpdate )
         this->setWindowTitle( QString("Czas pracy: ") + text );
     }
 
-    QImage image(16, 16, QImage::Format_RGB32);
     image.fill( background );
     QPainter writer(&image);
 
@@ -147,11 +146,12 @@ void MainWindow::tickf( bool forceUpdate )
         point.setY( 0 );
     }
 
-    image.setPixelColor( point,  QColor( 0, 0, 0) );
+    image.setPixelColor( point,  black );
 
     QIcon icon = QPixmap::fromImage(image);
 
     trayIcon->setIcon( icon );
+
     if( (! isHidden()) || forceUpdate )
     {
         setWindowIcon( icon );
@@ -163,7 +163,7 @@ void MainWindow::clicked()
 {
     if( isHidden() )
     {
-        tickf( true );
+        timeStep( true );
         show();
         setWindowState(windowState() & ~Qt::WindowMinimized | Qt::WindowActive);
         raise();
@@ -230,6 +230,6 @@ void MainWindow::on_pushButton_2_clicked()
 
     QDateTime now = QDateTime::currentDateTime();
     start = now.addSecs( -secs );
-    tickf( true );
+    timeStep( true );
 }
 

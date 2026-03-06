@@ -27,12 +27,18 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    void tick();
-    void tickf(bool forceUpdate );
+    void timerTimeout();
+    void timeStep(bool forceUpdate );
     QDateTime start;
 
     QSystemTrayIcon *trayIcon;
     void clicked();
     int oldSeconds;
+    QImage image;
+
+    static inline const QColor gold{ 255, 215, 0};
+    static inline const QColor black{ 0, 0, 0};
+    static inline const QColor green{ 10, 230, 168};
+    static inline const QColor red{ 255, 0, 0};
 };
 #endif // MAINWINDOW_H

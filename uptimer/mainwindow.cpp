@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
     , start(QDateTime::currentDateTime())
     , trayIcon( new QSystemTrayIcon(this))
     , oldSeconds( -1 )
-    , image(16, 16, QImage::Format_RGB32)
+    , image()
 {
     ui->setupUi(this);
 

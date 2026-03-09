@@ -1,11 +1,23 @@
 #include "trayiconimage.h"
 #include <QPainter>
+#include <QtGlobal>
 
-TrayIconImage::TrayIconImage(int width, int height, Format format)
-    : QImage( width, height, format)
+TrayIconImage::TrayIconImage()
+#if defined(Q_OS_WIN)
+    : QImage( 16, 16, QImage::Format_RGB32 )
+    , FontSize2Digits( 9 )
+    , FontSize2andHalfDigits( 8 )
+    , FontSize3andHalfdigits( 7 )
+#elif defined(Q_OS_LINUX)
+    : QImage( 16, 16, QImage::Format_RGB32 )
+#else
+    #error "This OS is not supported"
+#endif
+
 {
     //noop
 }
+
 
 void TrayIconImage::updateIcon( int hours, int mins, int allMins, int secs )
 {
@@ -15,28 +27,28 @@ void TrayIconImage::updateIcon( int hours, int mins, int allMins, int secs )
     if( allMins < 100 )
     {
         allMins %= 100;
-        fontSize = 9;
-        background=green;
+        fontSize = FontSize2Digits;
+        background=Green;
         iconText=QString("%1").arg(allMins, 2, 10, '0');
     }
     else
     {
         if( hours < 8 )
         {
-            background=gold;
+            background=Gold;
         }
         else
         {
-            background=red;
+            background=Red;
         }
 
         if( hours < 10 )
         {
-            fontSize = 8;
+            fontSize = FontSize2andHalfDigits;
         }
         else
         {
-            fontSize = 7;
+            fontSize = FontSize3andHalfdigits;
         }
 
         iconText=QString("%1:%2").arg(hours).arg(mins/10);
@@ -47,13 +59,13 @@ void TrayIconImage::updateIcon( int hours, int mins, int allMins, int secs )
 
     writer.setRenderHint(QPainter::Antialiasing, false);
     writer.setFont( QFont( "Serif", fontSize ) );
-    writer.setPen( black );
+    writer.setPen( Black );
 
     writer.drawText( rect(), Qt::AlignCenter, iconText);
 
     QPoint point = secondsToSecondHandPoint( secs );
 
-    setPixelColor( point,  black );
+    setPixelColor( point,  Black );
 }
 
 QPoint TrayIconImage::secondsToSecondHandPoint( int secs )

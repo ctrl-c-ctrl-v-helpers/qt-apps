@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QDateTime>
 #include <QSystemTrayIcon>
+#include "trayiconimage.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -34,11 +35,9 @@ private:
     QSystemTrayIcon *trayIcon;
     void clicked();
     int oldSeconds;
-    QImage image;
+    TrayIconImage image;
 
-    static inline const QColor gold{ 255, 215, 0};
-    static inline const QColor black{ 0, 0, 0};
-    static inline const QColor green{ 10, 230, 168};
-    static inline const QColor red{ 255, 0, 0};
 };
+
+
 #endif // MAINWINDOW_H

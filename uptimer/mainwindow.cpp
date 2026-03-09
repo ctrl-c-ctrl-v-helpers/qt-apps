@@ -4,7 +4,7 @@
 #include <QString>
 #include <QIcon>
 #include <QPixmap>
-#include <QPainter>
+
 #include <QDebug>
 #include <QInputDialog>
 
@@ -58,9 +58,7 @@ void MainWindow::timeStep( bool forceUpdate )
         hide();
     }
 
-    QColor background;
-    QString iconText;
-    int fontSize;
+
     int allMins = allSeconds / 60;
 
     int secs = allSeconds % 60;
@@ -71,36 +69,6 @@ void MainWindow::timeStep( bool forceUpdate )
 
     int hours=allSeconds;
 
-    if( allMins < 100 )
-    {
-        allMins %= 100;
-        fontSize = 9;
-        background=green;
-        iconText=QString("%1").arg(allMins, 2, 10, '0');
-    }
-    else
-    {
-        if( hours < 8 )
-        {
-            background=gold;
-        }
-        else
-        {
-            background=red;
-        }
-
-        if( hours < 10 )
-        {
-            fontSize = 8;
-        }
-        else
-        {
-            fontSize = 7;
-        }
-
-        iconText=QString("%1:%2").arg(hours).arg(mins/10);
-    }
-
     if( (! isHidden()) || forceUpdate )
     {
         QString text = QString("%1:%2:%3").arg(hours, 2, 10, '0').arg(mins, 2, 10, '0').arg(secs, 2, 10, '0');
@@ -108,45 +76,7 @@ void MainWindow::timeStep( bool forceUpdate )
         this->setWindowTitle( QString("Czas pracy: ") + text );
     }
 
-    image.fill( background );
-    QPainter writer(&image);
-
-    writer.setRenderHint(QPainter::Antialiasing, false);
-    writer.setFont( QFont( "Serif", fontSize ) );
-    writer.setPen( black );
-
-    writer.drawText( image.rect(), Qt::AlignCenter, iconText);
-
-    QPoint point;
-
-    if( secs < 8 ) //lewo
-    {
-        point.setX(secs + 8);
-        point.setY( 0 );
-
-    }
-    else if ( secs < 23 ) //dol
-    {
-        point.setX(15);
-        point.setY( secs - 7 );
-    }
-    else if ( secs < 38 ) //prawo
-    {
-        point.setX(37 - secs);
-        point.setY( 15 );
-    }
-    else if ( secs < 53 ) //gora
-    {
-        point.setX( 0);
-        point.setY( 52 - secs );
-    }
-    else //lewo
-    {
-        point.setX( secs - 52);
-        point.setY( 0 );
-    }
-
-    image.setPixelColor( point,  black );
+    image.updateIcon( hours, mins, allMins, secs );
 
     QIcon icon = QPixmap::fromImage(image);
 

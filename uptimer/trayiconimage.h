@@ -22,7 +22,7 @@ private:
     static inline const QColor Green{ 10, 230, 168};
     static inline const QColor Red{ 255, 0, 0};
 
-    static QPoint secondsToSecondHandPoint( int secs );
+    QPoint secondsToSecondHandPoint( int secs );
 };
 
 

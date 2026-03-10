@@ -100,5 +100,10 @@ QPoint TrayIconImage::secondsToSecondHandPoint( int secs )
         point.setX( secs - 52);
         point.setY( 0 );
     }
+
+    //scale for icon size
+    point.setX( point.x()*(width()-1)/15 );
+    point.setY( point.y()*(height()-1)/15 );
+
     return point;
 }

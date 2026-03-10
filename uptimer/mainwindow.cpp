@@ -69,7 +69,7 @@ void MainWindow::timeStep( bool forceUpdate )
 
     int hours=allSeconds;
 
-    QString workTime = QString("%1:%2:%3").arg(hours, 2, 10, '0').arg(mins, 2, 10, '0').arg(secs, 2, 10, '0');
+    QString workTime = QString("%1:%2:%3").arg(hours, 2, 10, QChar('0')).arg(mins, 2, 10, QChar('0')).arg(secs, 2, 10, QChar('0'));
     QString workTimeText = QString("Czas pracy: ") + workTime;
 
     if( (! isHidden()) || forceUpdate )

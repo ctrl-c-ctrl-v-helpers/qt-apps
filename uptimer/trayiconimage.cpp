@@ -9,7 +9,10 @@ TrayIconImage::TrayIconImage()
     , FontSize2andHalfDigits( 8 )
     , FontSize3andHalfdigits( 7 )
 #elif defined(Q_OS_LINUX)
-    : QImage( 16, 16, QImage::Format_RGB32 )
+    : QImage( 22, 22, QImage::Format_RGB32 )
+    , FontSize2Digits( 14 )
+    , FontSize2andHalfDigits( 12 )
+    , FontSize3andHalfdigits( 10 )
 #else
     #error "This OS is not supported"
 #endif
@@ -29,7 +32,7 @@ void TrayIconImage::updateIcon( int hours, int mins, int allMins, int secs )
         allMins %= 100;
         fontSize = FontSize2Digits;
         background=Green;
-        iconText=QString("%1").arg(allMins, 2, 10, '0');
+        iconText=QString("%1").arg(allMins, 2, 10, QChar('0'));
     }
     else
     {

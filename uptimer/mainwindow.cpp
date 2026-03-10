@@ -69,11 +69,13 @@ void MainWindow::timeStep( bool forceUpdate )
 
     int hours=allSeconds;
 
+    QString workTime = QString("%1:%2:%3").arg(hours, 2, 10, '0').arg(mins, 2, 10, '0').arg(secs, 2, 10, '0');
+    QString workTimeText = QString("Czas pracy: ") + workTime;
+
     if( (! isHidden()) || forceUpdate )
     {
-        QString text = QString("%1:%2:%3").arg(hours, 2, 10, '0').arg(mins, 2, 10, '0').arg(secs, 2, 10, '0');
-        ui->lcdNumber->display( text );
-        this->setWindowTitle( QString("Czas pracy: ") + text );
+        this->setWindowTitle( workTimeText );
+        ui->lcdNumber->display( workTime );
     }
 
     image.updateIcon( hours, mins, allMins, secs );
@@ -81,6 +83,7 @@ void MainWindow::timeStep( bool forceUpdate )
     QIcon icon = QPixmap::fromImage(image);
 
     trayIcon->setIcon( icon );
+    trayIcon->setToolTip( workTimeText );
 
     if( (! isHidden()) || forceUpdate )
     {

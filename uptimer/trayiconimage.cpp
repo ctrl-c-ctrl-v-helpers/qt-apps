@@ -16,7 +16,6 @@ TrayIconImage::TrayIconImage()
 #else
     #error "This OS is not supported"
 #endif
-
 {
     //noop
 }
@@ -101,9 +100,11 @@ QPoint TrayIconImage::secondsToSecondHandPoint( int secs )
         point.setY( 0 );
     }
 
+#if defined(Q_OS_LINUX)
     //scale for icon size
     point.setX( point.x()*(width()-1)/15 );
     point.setY( point.y()*(height()-1)/15 );
+#endif
 
     return point;
 }

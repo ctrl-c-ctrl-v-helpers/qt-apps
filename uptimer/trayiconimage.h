@@ -6,8 +6,6 @@
 class TrayIconImage : public QImage
 {
 public:
-    TrayIconImage(int width, int height, QImage::Format format);
-
     TrayIconImage();
 
     void updateIcon(int hours, int mins, int allMins , int secs);

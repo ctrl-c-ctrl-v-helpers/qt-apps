@@ -30,6 +30,8 @@ MainWindow::MainWindow(QWidget *parent)
     timerTimeout();
 
     trayIcon->show();
+
+    QTimer::singleShot( TimeToAutoHideSeconds*1000 , this, &QMainWindow::hide );
 }
 
 MainWindow::~MainWindow()
@@ -52,12 +54,6 @@ void MainWindow::timeStep( bool forceUpdate )
         return;
     }
     oldSeconds = allSeconds;
-
-    if( allSeconds == 5)
-    {
-        hide();
-    }
-
 
     int allMins = allSeconds / 60;
 

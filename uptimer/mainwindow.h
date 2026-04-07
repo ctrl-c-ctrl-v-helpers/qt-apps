@@ -37,6 +37,8 @@ private:
     int oldSeconds;
     TrayIconImage image;
 
+    static inline const int TimeToAutoHideSeconds{5};
+
 };
 
 

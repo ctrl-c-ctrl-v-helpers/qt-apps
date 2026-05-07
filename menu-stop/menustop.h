@@ -29,7 +29,10 @@ protected:
 private:
     Ui::MenuStop *ui;
     QString dirPath;
-    QPoint windowPos;
+    QString iconPath;
+    QString configPath;
+    QString menuName;
+    int windowPosY;
     QVector<Lnk> shortcuts;
     int iconSize;
 };

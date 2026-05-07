@@ -15,28 +15,38 @@
 #include <QKeyEvent>
 #include <QLabel>
 #include "verticallabel.h"
+#include <QCursor>
 
 MenuStop::MenuStop(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MenuStop)
 {
+    QStringList args = QCoreApplication::arguments();
+    if( args.size() == 2 )
+    {
+        configPath = args[1];
+    }
+    else
+    {
+        configPath="menustop.ini";
+    }
+
+
     readConfig();
     checkFilesForShortcuts( dirPath );
     ui->setupUi(this);
     populateGrid();
 
+    setWindowTitle(QString("\u200B"));
+    setWindowIcon(QIcon( iconPath ));
 
-
-    this->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+    this->setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
     this->setStyleSheet("QMainWindow { border: 1px solid #D4D4D4; }");
 
     ui->centralwidget->layout()->setSizeConstraint(QLayout::SetFixedSize);
     this->adjustSize();
 
-    int topLeftX = windowPos.x();
-    int topLeftY = windowPos.y() - this->height();
-
-    this->move(topLeftX, topLeftY);
+    this->showMinimized();
 
 }
 
@@ -61,10 +71,10 @@ void MenuStop::populateGrid() {
         );
 
     // Dodanie pionowego tekstu (opcjonalnie)
-    banner->setText("STOP MENU");
-    banner->setFont(QFont("Tahoma", 12, QFont::Bold));
+    banner->setText(menuName);
+    banner->setFont(QFont("Consolas", 16, QFont::Bold));
     banner->setAlignment(Qt::AlignBottom | Qt::AlignHCenter);
-    banner->setStyleSheet(banner->styleSheet() + "color: white; font-weight: bold; font-family: 'Tahoma';");
+    banner->setStyleSheet(banner->styleSheet() + "color: white");
 
 
 
@@ -88,7 +98,7 @@ void MenuStop::populateGrid() {
         QObject::connect(btn, &QPushButton::clicked, [this, i]() {
             QDesktopServices::openUrl(QUrl::fromLocalFile(shortcuts[i].path));
             qDebug() << "Selected shortcut: " << shortcuts[i].path;
-            qApp->quit();
+            this->showMinimized();
         });
         gridLayout->addWidget(btn, i, 1);
     }
@@ -110,23 +120,18 @@ void MenuStop::populateGrid() {
 
 
 void MenuStop::readConfig() {
-    QSettings settings("menustop.ini", QSettings::IniFormat);
+    QSettings settings(configPath, QSettings::IniFormat);
     QString srcDir = settings.value("Settings/SrcDir", "").toString();
     //QString nativePath = QDir::toNativeSeparators(srcDir);
 
-    QString posRaw = settings.value("Settings/Pos", "0x0").toString();
-    QStringList parts = posRaw.split('x');
-
-
-    QPoint p(0,0);
-    if (parts.size() == 2) {
-        p.setX(parts[0].toInt());
-        p.setY(parts[1].toInt());
-    }
     dirPath = srcDir;
-    windowPos = p;
+    windowPosY = settings.value("Settings/PosY", 768).toInt();;
 
     iconSize = settings.value("Settings/IconSize", 24).toInt();
+
+    iconPath =  settings.value("Settings/Icon", "").toString();
+
+    menuName = settings.value("Settings/MenuName", "").toString();
 
 }
 
@@ -134,7 +139,7 @@ void MenuStop::checkFilesForShortcuts(const QString &path) {
     QDir directory(path);
     // Pobieramy listę wszystkich plików
 
-    QDirIterator it(path, QDir::Files | QDir::NoDotAndDotDot | QDir::Dirs);
+    QDirIterator it(path,QDir::AllEntries | QDir::System | QDir::Hidden | QDir::NoDotAndDotDot );
     while( it.hasNext() ) {
         it.next();
         QFileInfo fileInfo = it.fileInfo(); // pobiera info bezpośrednio
@@ -148,6 +153,19 @@ void MenuStop::checkFilesForShortcuts(const QString &path) {
     std::sort(shortcuts.begin(), shortcuts.end(), [](const Lnk &a, const Lnk &b) {
         return QString::localeAwareCompare(a.name, b.name) < 0;
     });
+
+    for( int i=0; i<shortcuts.size(); ++i )
+    {
+        QStringList parts = shortcuts[i].name.split("---");
+
+        if (parts.size() > 1) {
+            parts.removeAt(0);
+            shortcuts[i].name = parts.join("---");
+        }
+        shortcuts[i].name += "     ";
+    }
+
+
 }
 
 void MenuStop::changeEvent(QEvent *event)
@@ -159,9 +177,15 @@ void MenuStop::changeEvent(QEvent *event)
     if (event->type() == QEvent::ActivationChange) {
         if (!this->isActiveWindow()) {
 
-            qDebug() << "App close without click";
-            qApp->quit();
+            qDebug() << "App hide without click";
+            this->showMinimized();
 
+        }
+        else
+        {
+            int topLeftX = QCursor::pos().x();
+            int topLeftY = windowPosY - this->height();
+            this->move(topLeftX, topLeftY);
         }
     }
 }
@@ -169,7 +193,7 @@ void MenuStop::changeEvent(QEvent *event)
 void MenuStop::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_Escape) {
         qDebug() << "App close with ESC";
-        qApp->quit();
+        this->showMinimized();
     } else if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
             // Sprawdź, który widget ma fokus
             QPushButton *focusedBtn = qobject_cast<QPushButton*>(focusWidget());

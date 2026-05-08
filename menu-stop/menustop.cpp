@@ -29,7 +29,7 @@ MenuStop::MenuStop(QWidget *parent)
     }
     else
     {
-        configPath="menustop.ini";
+        configPath="menu-stop.ini";
     }
 
 

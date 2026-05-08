@@ -21,6 +21,7 @@ public:
     void readConfig();
     void checkFilesForShortcuts(const QString &path);
     void populateGrid();
+    int getXPos( int x );
 
 protected:
     void changeEvent(QEvent *event) override;
@@ -32,8 +33,11 @@ private:
     QString iconPath;
     QString configPath;
     QString menuName;
-    int windowPosY;
+    int windowOffsetY;
     QVector<Lnk> shortcuts;
     int iconSize;
+    QVector<int> xPositions;
+    QString menuColorStart;
+    QString menuColorStop;
 };
 #endif // MENUSTOP_H

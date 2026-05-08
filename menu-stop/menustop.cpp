@@ -16,6 +16,7 @@
 #include <QLabel>
 #include "verticallabel.h"
 #include <QCursor>
+#include <QScreen>
 
 MenuStop::MenuStop(QWidget *parent)
     : QMainWindow(parent)
@@ -66,8 +67,10 @@ void MenuStop::populateGrid() {
     banner->setFixedWidth(30); // Szerokość paska
     // Stylizacja: gradient od ciemnego granatu (Navy) do jasnego błękitu
     banner->setStyleSheet(
-        "background: qlineargradient(x1:0, y1:1, x2:0, y2:0, stop:0 #000080, stop:1 #000);"
+        QString(
+        "background: qlineargradient(x1:0, y1:1, x2:0, y2:0, stop:0 %1, stop:1 %2);"
         "border-right: 1px solid #ffffff;"
+            ).arg(menuColorStart, menuColorStop)
         );
 
     // Dodanie pionowego tekstu (opcjonalnie)
@@ -76,10 +79,7 @@ void MenuStop::populateGrid() {
     banner->setAlignment(Qt::AlignBottom | Qt::AlignHCenter);
     banner->setStyleSheet(banner->styleSheet() + "color: white");
 
-
-
-
-     QGridLayout *gridLayout = new QGridLayout();
+    QGridLayout *gridLayout = new QGridLayout();
     gridLayout->setSpacing(0);
     gridLayout->setContentsMargins(5, 5, 5, 5);
 
@@ -117,15 +117,13 @@ void MenuStop::populateGrid() {
 
 }
 
-
-
 void MenuStop::readConfig() {
     QSettings settings(configPath, QSettings::IniFormat);
     QString srcDir = settings.value("Settings/SrcDir", "").toString();
     //QString nativePath = QDir::toNativeSeparators(srcDir);
 
     dirPath = srcDir;
-    windowPosY = settings.value("Settings/PosY", 768).toInt();;
+    windowOffsetY = settings.value("Settings/OffsetY", 768).toInt();;
 
     iconSize = settings.value("Settings/IconSize", 24).toInt();
 
@@ -133,6 +131,8 @@ void MenuStop::readConfig() {
 
     menuName = settings.value("Settings/MenuName", "").toString();
 
+    menuColorStart = settings.value("Settings/MenuColorStart", "").toString();
+    menuColorStop = settings.value("Settings/MenuColorStop", "").toString();
 }
 
 void MenuStop::checkFilesForShortcuts(const QString &path) {
@@ -170,9 +170,6 @@ void MenuStop::checkFilesForShortcuts(const QString &path) {
 
 void MenuStop::changeEvent(QEvent *event)
 {
-    // Wywołujemy bazową implementację
-    QMainWindow::changeEvent(event);
-
 
     if (event->type() == QEvent::ActivationChange) {
         if (!this->isActiveWindow()) {
@@ -183,11 +180,37 @@ void MenuStop::changeEvent(QEvent *event)
         }
         else
         {
-            int topLeftX = QCursor::pos().x();
-            int topLeftY = windowPosY - this->height();
-            this->move(topLeftX, topLeftY);
+            QPoint cursorGlobalPos = QCursor::pos();
+            QScreen *screenAtCursor = QGuiApplication::screenAt(cursorGlobalPos);
+            if (screenAtCursor) {
+                int screenHeight = screenAtCursor->availableGeometry().height();
+                int screenTop = screenAtCursor->availableGeometry().top();
+
+                int topLeftX = getXPos( cursorGlobalPos.x() );
+                int topLeftY = screenTop + screenHeight - this->height() - windowOffsetY;
+                this->move(topLeftX, topLeftY);
+            }
         }
     }
+
+    // Wywołujemy bazową implementację
+    QMainWindow::changeEvent(event);
+}
+
+int MenuStop::getXPos( int x ) {
+    const int QuantOfX=32;
+    x-=QuantOfX;
+
+    for( int i=0; i<xPositions.size(); ++i )
+    {
+        if( qAbs(xPositions[i] - x) < QuantOfX )
+        {
+            return xPositions[i];
+        }
+    }
+
+    xPositions.push_back(x);
+    return x;
 }
 
 void MenuStop::keyPressEvent(QKeyEvent *event) {

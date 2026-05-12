@@ -55,7 +55,7 @@ MenuStop::MenuStop(QWidget *parent)
     this->showMinimized();
 
     connect(qApp, &QApplication::focusChanged, this, [this](QWidget *old, QWidget *now) {
-        QTimer::singleShot(1, this, [this]() {
+        QTimer::singleShot(1000, this, [this]() {
             if (QApplication::activeWindow() == nullptr) {
                 qDebug() << "Focus opuścił aplikację!";
                 if( subDirWindow )

@@ -17,10 +17,15 @@
 #include "verticallabel.h"
 #include <QCursor>
 #include <QScreen>
+#include "hoverbutton.h"
+#include "subdirwindow.h"
+#include <QTimer>
 
 MenuStop::MenuStop(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MenuStop)
+    , subDirWindow( nullptr )
+    , subDirId(-1)
 {
     QStringList args = QCoreApplication::arguments();
     if( args.size() == 2 )
@@ -34,7 +39,7 @@ MenuStop::MenuStop(QWidget *parent)
 
 
     readConfig();
-    checkFilesForShortcuts( dirPath );
+    checkFilesForShortcuts( dirPath, shortcuts );
     ui->setupUi(this);
     populateGrid();
 
@@ -49,6 +54,20 @@ MenuStop::MenuStop(QWidget *parent)
 
     this->showMinimized();
 
+    connect(qApp, &QApplication::focusChanged, this, [this](QWidget *old, QWidget *now) {
+        QTimer::singleShot(1, this, [this]() {
+            if (QApplication::activeWindow() == nullptr) {
+                qDebug() << "Focus opuścił aplikację!";
+                if( subDirWindow )
+                {
+                    subDirWindow->closeUpwards();
+                    subDirWindow=nullptr;
+                    subDirId=-1;
+                }
+                this->showMinimized();
+            }
+        });
+    });
 }
 
 MenuStop::~MenuStop()
@@ -85,7 +104,7 @@ void MenuStop::populateGrid() {
 
     for( int i=0; i<shortcuts.size(); ++i )
     {
-        QPushButton *btn = new QPushButton( shortcuts[i].name );
+        HoverButton *btn = new HoverButton( shortcuts[i].name );
 
         btn->setIcon( shortcuts[i].icon );
         btn->setIconSize(QSize(iconSize, iconSize));
@@ -100,6 +119,30 @@ void MenuStop::populateGrid() {
             qDebug() << "Selected shortcut: " << shortcuts[i].path;
             this->showMinimized();
         });
+        QObject::connect(btn, &HoverButton::mouseEntered, this, [this, i, btn]() {
+            if( subDirId != i )
+            {
+                if( subDirWindow )
+                {
+                    subDirWindow->closeUpwards();
+                    subDirWindow=nullptr;
+                    subDirId=-1;
+                }
+                if( shortcuts[i].subDir )
+                {
+                    QPoint pos = btn->mapToGlobal(QPoint(btn->width(), btn->height()));
+                    subDirWindow = new SubDirWindow(*shortcuts[i].subDir, iconSize, pos, this);
+                    subDirWindow->setAttribute(Qt::WA_DeleteOnClose);
+                    subDirWindow->populateGrid();
+                    subDirId=i;
+                }
+            }
+        });
+
+        //QObject::connect(btn, &HoverButton::mouseLeft, this, [this, i]() {
+        //});
+
+
         gridLayout->addWidget(btn, i, 1);
     }
    // gridLayout->setSpacing(0);
@@ -135,7 +178,7 @@ void MenuStop::readConfig() {
     menuColorStop = settings.value("Settings/MenuColorStop", "").toString();
 }
 
-void MenuStop::checkFilesForShortcuts(const QString &path) {
+void MenuStop::checkFilesForShortcuts(const QString &path, QVector<Lnk> &shortcuts) {
     QDir directory(path);
     // Pobieramy listę wszystkich plików
 
@@ -143,9 +186,16 @@ void MenuStop::checkFilesForShortcuts(const QString &path) {
     while( it.hasNext() ) {
         it.next();
         QFileInfo fileInfo = it.fileInfo(); // pobiera info bezpośrednio
-        if (fileInfo.isShortcut()) {
+        if (fileInfo.isShortcut() || fileInfo.isDir() ) {
 
             Lnk s( fileInfo.absoluteFilePath() );
+
+            if( fileInfo.isDir() && ( not fileInfo.absoluteFilePath().endsWith(".lnk", Qt::CaseInsensitive)) )
+            {
+                s.subDir = new QVector<Lnk>;
+                checkFilesForShortcuts( s.path, *s.subDir );
+            }
+
             shortcuts.push_back(s);
         }
     }
@@ -174,21 +224,25 @@ void MenuStop::changeEvent(QEvent *event)
     if (event->type() == QEvent::ActivationChange) {
         if (!this->isActiveWindow()) {
 
-            qDebug() << "App hide without click";
-            this->showMinimized();
-
+            if( ! subDirWindow )
+            {
+                qDebug() << "App hide without click";
+                this->showMinimized();
+            }
         }
         else
         {
-            QPoint cursorGlobalPos = QCursor::pos();
-            QScreen *screenAtCursor = QGuiApplication::screenAt(cursorGlobalPos);
-            if (screenAtCursor) {
-                int screenHeight = screenAtCursor->availableGeometry().height();
-                int screenTop = screenAtCursor->availableGeometry().top();
+            if( ! underMouse() ) {
+                QPoint cursorGlobalPos = QCursor::pos();
+                QScreen *screenAtCursor = QGuiApplication::screenAt(cursorGlobalPos);
+                if (screenAtCursor) {
+                    int screenHeight = screenAtCursor->availableGeometry().height();
+                    int screenTop = screenAtCursor->availableGeometry().top();
 
-                int topLeftX = getXPos( cursorGlobalPos.x() );
-                int topLeftY = screenTop + screenHeight - this->height() - windowOffsetY;
-                this->move(topLeftX, topLeftY);
+                    int topLeftX = getXPos( cursorGlobalPos.x() );
+                    int topLeftY = screenTop + screenHeight - this->height() - windowOffsetY;
+                    this->move(topLeftX, topLeftY);
+                }
             }
         }
     }

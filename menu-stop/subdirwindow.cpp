@@ -46,7 +46,14 @@ void SubDirWindow::populateGrid() {
 
         QObject::connect(btn, &QPushButton::clicked, [this, i]() {
             QDesktopServices::openUrl(QUrl::fromLocalFile(shortcuts[i].path));
-            this->showMinimized();
+
+            const QWidgetList widgets = QApplication::topLevelWidgets();
+
+            for (QWidget *widget : widgets) {
+                if (widget->isWindow()) {
+                    widget->showMinimized();
+                }
+            }
         });
 
         QObject::connect(btn, &HoverButton::mouseEntered, this, [this, i, btn]() {

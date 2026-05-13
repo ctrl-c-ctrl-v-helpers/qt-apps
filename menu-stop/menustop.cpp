@@ -57,7 +57,6 @@ MenuStop::MenuStop(QWidget *parent)
     connect(qApp, &QApplication::focusChanged, this, [this](QWidget *old, QWidget *now) {
         QTimer::singleShot(1000, this, [this]() {
             if (QApplication::activeWindow() == nullptr) {
-                qDebug() << "Focus opuścił aplikację!";
                 if( subDirWindow )
                 {
                     subDirWindow->closeUpwards();
@@ -81,10 +80,9 @@ void MenuStop::populateGrid() {
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
-    // 2. Tworzymy BANER (niebieski pasek po lewej)
+
     VerticalLabel *banner = new VerticalLabel();
     banner->setFixedWidth(30); // Szerokość paska
-    // Stylizacja: gradient od ciemnego granatu (Navy) do jasnego błękitu
     banner->setStyleSheet(
         QString(
         "background: qlineargradient(x1:0, y1:1, x2:0, y2:0, stop:0 %1, stop:1 %2);"
@@ -92,7 +90,6 @@ void MenuStop::populateGrid() {
             ).arg(menuColorStart, menuColorStop)
         );
 
-    // Dodanie pionowego tekstu (opcjonalnie)
     banner->setText(menuName);
     banner->setFont(QFont("Consolas", 16, QFont::Bold));
     banner->setAlignment(Qt::AlignBottom | Qt::AlignHCenter);
@@ -112,11 +109,10 @@ void MenuStop::populateGrid() {
         btn->setFocusPolicy(Qt::StrongFocus);
 
         btn->setStyleSheet("QPushButton { text-align: left; padding: 10px; border: 1px solid #D4D4D4; background: transparent; }"
-                           "QPushButton:hover { background-color: #000080; color: #FFFFFF; font-weight: bold; }");
+                           "QPushButton:hover { background-color: #000080; color: #FFFFFF; }");
 
         QObject::connect(btn, &QPushButton::clicked, [this, i]() {
             QDesktopServices::openUrl(QUrl::fromLocalFile(shortcuts[i].path));
-            qDebug() << "Selected shortcut: " << shortcuts[i].path;
             this->showMinimized();
         });
         QObject::connect(btn, &HoverButton::mouseEntered, this, [this, i, btn]() {
@@ -139,25 +135,11 @@ void MenuStop::populateGrid() {
             }
         });
 
-        //QObject::connect(btn, &HoverButton::mouseLeft, this, [this, i]() {
-        //});
-
-
         gridLayout->addWidget(btn, i, 1);
     }
-   // gridLayout->setSpacing(0);
 
-
-    mainLayout->addWidget(banner);      // Baner po lewej
-    mainLayout->addLayout(gridLayout); // Przyciski po prawej
-
-    // Ustawienie fokusu na pierwszym elemencie
-    if (shortcuts.size() > 0) {
-        if (auto* firstBtn = qobject_cast<QPushButton*>(gridLayout->itemAt(0)->widget())) {
-            firstBtn->setFocus();
-        }
-    }
-
+    mainLayout->addWidget(banner);
+    mainLayout->addLayout(gridLayout);
 }
 
 void MenuStop::readConfig() {
@@ -180,7 +162,6 @@ void MenuStop::readConfig() {
 
 void MenuStop::checkFilesForShortcuts(const QString &path, QVector<Lnk> &shortcuts) {
     QDir directory(path);
-    // Pobieramy listę wszystkich plików
 
     QDirIterator it(path,QDir::AllEntries | QDir::System | QDir::Hidden | QDir::NoDotAndDotDot );
     while( it.hasNext() ) {
@@ -194,8 +175,16 @@ void MenuStop::checkFilesForShortcuts(const QString &path, QVector<Lnk> &shortcu
             {
                 s.subDir = new QVector<Lnk>;
                 checkFilesForShortcuts( s.path, *s.subDir );
+                if( s.subDir->size() == 0 )
+                {
+                    delete s.subDir;
+                    s.subDir=nullptr;
+                }
+                else
+                {
+                    s.name += "     🞂";
+                }
             }
-
             shortcuts.push_back(s);
         }
     }
@@ -226,7 +215,6 @@ void MenuStop::changeEvent(QEvent *event)
 
             if( ! subDirWindow )
             {
-                qDebug() << "App hide without click";
                 this->showMinimized();
             }
         }
@@ -246,8 +234,6 @@ void MenuStop::changeEvent(QEvent *event)
             }
         }
     }
-
-    // Wywołujemy bazową implementację
     QMainWindow::changeEvent(event);
 }
 
@@ -268,18 +254,13 @@ int MenuStop::getXPos( int x ) {
 }
 
 void MenuStop::keyPressEvent(QKeyEvent *event) {
-    if (event->key() == Qt::Key_Escape) {
-        qDebug() << "App close with ESC";
-        this->showMinimized();
-    } else if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
-            // Sprawdź, który widget ma fokus
-            QPushButton *focusedBtn = qobject_cast<QPushButton*>(focusWidget());
-            if (focusedBtn) {
-                focusedBtn->click(); // Wywołuje Twoją lambdę z openUrl i quit
-            }
-        }
-        else {
-            QMainWindow::keyPressEvent(event);
-        }
+    if (event->key() == Qt::Key_Escape)
+    {
+        event->accept();
+    }
+    else
+    {
+        QMainWindow::keyPressEvent(event);
+    }
 }
 

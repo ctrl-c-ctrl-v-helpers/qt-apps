@@ -12,7 +12,6 @@ Lnk::Lnk( QString shortcutPath )
 
     QFileIconProvider provider;
     icon = provider.icon(fileInfo);
-    qDebug() << path;
 }
 
 Lnk::Lnk(const Lnk &other)
@@ -70,5 +69,6 @@ Lnk::~Lnk() {
     if( subDir )
     {
         delete subDir;
+        subDir=nullptr;
     }
 }

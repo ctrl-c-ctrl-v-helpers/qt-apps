@@ -12,18 +12,14 @@ SubDirWindow::SubDirWindow(QVector<Lnk> & shortc, int iconSz, QPoint leftBottom,
     , leftBottomCorner( leftBottom )
     , subDirId(-1)
 {
-
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
-
-    // 2. Automatyczne usuwanie obiektu z pamięci po zamknięciu (ważne dla .show())
     setAttribute(Qt::WA_DeleteOnClose);
 
-    qDebug() << "created " << this;
 }
 
 SubDirWindow::~SubDirWindow()
 {
-    qDebug() << "deleted " << this;
+    ;//NOOP
 }
 
 void SubDirWindow::populateGrid() {
@@ -46,11 +42,10 @@ void SubDirWindow::populateGrid() {
         btn->setFocusPolicy(Qt::StrongFocus);
 
         btn->setStyleSheet("QPushButton { text-align: left; padding: 10px; border: 1px solid #D4D4D4; background: transparent; }"
-                           "QPushButton:hover { background-color: #000080; color: #FFFFFF; font-weight: bold; }");
+                           "QPushButton:hover { background-color: #000080; color: #FFFFFF; }");
 
         QObject::connect(btn, &QPushButton::clicked, [this, i]() {
             QDesktopServices::openUrl(QUrl::fromLocalFile(shortcuts[i].path));
-            qDebug() << "Selected shortcut: " << shortcuts[i].path;
             this->showMinimized();
         });
 
@@ -74,13 +69,11 @@ void SubDirWindow::populateGrid() {
             }
 
         });
-//        QObject::connect(btn, &HoverButton::mouseLeft, this, [this, windowLnk]() {
-//        });
 
         gridLayout->addWidget(btn, i, 0);
     }
 
-    mainLayout->addLayout(gridLayout); // Przyciski po prawej
+    mainLayout->addLayout(gridLayout);
 
     if (shortcuts.size() > 0) {
         if (auto* firstBtn = qobject_cast<QPushButton*>(gridLayout->itemAt(0)->widget())) {
@@ -88,9 +81,9 @@ void SubDirWindow::populateGrid() {
         }
     }
     this->show();
-    qDebug() << "lbc" << leftBottomCorner << this->height();
+
     int x=leftBottomCorner.x() + 5;
-    int y=leftBottomCorner.y() - this->height();
+    int y=leftBottomCorner.y() - this->height() + 5;
 
     QScreen *currentScreen = this->screen();
     if (currentScreen) {
@@ -122,20 +115,16 @@ void SubDirWindow::closeUpwards()
     }
 }
 
-void SubDirWindow::changeEvent(QEvent *event)
-{
-
-    if (event->type() == QEvent::ActivationChange) {
-        if (!this->isActiveWindow()) {
-
-            qDebug() << "sub hide without click";
-        }
-        else
-        {
-
-        }
+void SubDirWindow::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == Qt::Key_Escape)
+    {
+        event->accept();
+        return;
+    }
+    if (event->key() == Qt::Key_F4 && (event->modifiers() & Qt::AltModifier)) {
+        qApp->quit(); // Natychmiastowe, bezpieczne wyjście z aplikacji
+        return;
     }
 
-    // Wywołujemy bazową implementację
-    QDialog::changeEvent(event);
+    QDialog::keyPressEvent(event);
 }

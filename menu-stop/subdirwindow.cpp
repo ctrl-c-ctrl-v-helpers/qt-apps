@@ -128,7 +128,7 @@ void SubDirWindow::keyPressEvent(QKeyEvent *event) {
         event->accept();
         return;
     }
-    if (event->key() == Qt::Key_F4 && (event->modifiers() & Qt::AltModifier)) {
+    if ((event->key() == Qt::Key_F4 && (event->modifiers() & Qt::AltModifier)) or (event->key() == Qt::Key_Q)) {
         qApp->quit(); // Natychmiastowe, bezpieczne wyjście z aplikacji
         return;
     }

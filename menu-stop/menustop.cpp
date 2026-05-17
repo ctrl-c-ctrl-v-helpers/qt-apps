@@ -269,6 +269,10 @@ void MenuStop::keyPressEvent(QKeyEvent *event) {
     {
         event->accept();
     }
+    else if( event->key() == Qt::Key_Q)
+    {
+        qApp->quit();
+    }
     else
     {
         QMainWindow::keyPressEvent(event);

@@ -17,6 +17,7 @@ public:
     QIcon icon;
     QString name;
     QVector<Lnk> * subDir;
+    void reLink( QString rePath );
 
 };
 

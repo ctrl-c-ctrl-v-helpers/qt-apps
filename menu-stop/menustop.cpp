@@ -167,7 +167,12 @@ void MenuStop::checkFilesForShortcuts(const QString &path, QVector<Lnk> &shortcu
     while( it.hasNext() ) {
         it.next();
         QFileInfo fileInfo = it.fileInfo(); // pobiera info bezpośrednio
-        if (fileInfo.isShortcut() || fileInfo.isDir() ) {
+        if (
+            ( fileInfo.isShortcut() || fileInfo.isDir() )
+            and
+            ( not fileInfo.absoluteFilePath().endsWith("SELF-LINK.lnk", Qt::CaseInsensitive) )
+            )
+        {
 
             Lnk s( fileInfo.absoluteFilePath() );
 
@@ -183,6 +188,12 @@ void MenuStop::checkFilesForShortcuts(const QString &path, QVector<Lnk> &shortcu
                 else
                 {
                     s.name += "     🞂";
+                }
+
+                QFileInfo selfLink( fileInfo.absoluteFilePath() + "/SELF-LINK.lnk" );
+                if( selfLink.isShortcut() )
+                {
+                    s.reLink( "/SELF-LINK.lnk" );
                 }
             }
             shortcuts.push_back(s);

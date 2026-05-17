@@ -14,6 +14,15 @@ Lnk::Lnk( QString shortcutPath )
     icon = provider.icon(fileInfo);
 }
 
+void Lnk::reLink( QString rePath )
+{
+    path += rePath;
+    QFileInfo fileInfo(path);
+
+    QFileIconProvider provider;
+    icon = provider.icon(fileInfo);
+}
+
 Lnk::Lnk(const Lnk &other)
     : path(other.path)
     , name(other.name)

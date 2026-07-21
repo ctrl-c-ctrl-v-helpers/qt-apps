@@ -3,15 +3,18 @@
 #include <QFileIconProvider>
 #include <QDebug>
 
-Lnk::Lnk( QString shortcutPath )
+Lnk::Lnk( QString shortcutPath, int iconSz )
     : path(shortcutPath)
     , subDir( NULL )
+    , iconSize (iconSz )
 {
     QFileInfo fileInfo(shortcutPath);
     name=fileInfo.completeBaseName();
 
     QFileIconProvider provider;
-    icon = provider.icon(fileInfo);
+    QIcon tempIcon = provider.icon(fileInfo);
+    QPixmap rawPixmap = tempIcon.pixmap(QSize(iconSize, iconSize));
+    icon = QPixmap::fromImage(rawPixmap.toImage());
 }
 
 void Lnk::reLink( QString rePath )
@@ -20,7 +23,9 @@ void Lnk::reLink( QString rePath )
     QFileInfo fileInfo(path);
 
     QFileIconProvider provider;
-    icon = provider.icon(fileInfo);
+    QIcon tempIcon = provider.icon(fileInfo);
+    QPixmap rawPixmap = tempIcon.pixmap(QSize(iconSize, iconSize));
+    icon = QPixmap::fromImage(rawPixmap.toImage());
 }
 
 Lnk::Lnk(const Lnk &other)

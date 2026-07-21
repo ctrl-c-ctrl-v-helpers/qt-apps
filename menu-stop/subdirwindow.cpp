@@ -23,7 +23,6 @@ SubDirWindow::~SubDirWindow()
 }
 
 void SubDirWindow::populateGrid() {
-
     QHBoxLayout *mainLayout = new QHBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
@@ -32,41 +31,30 @@ void SubDirWindow::populateGrid() {
     gridLayout->setSpacing(0);
     gridLayout->setContentsMargins(5, 5, 5, 5);
 
-    for( int i=0; i<shortcuts.size(); ++i )
-    {
+    for( int i=0; i<shortcuts.size(); ++i ) {
         HoverButton *btn = new HoverButton( shortcuts[i].name );
-
         btn->setIcon( shortcuts[i].icon );
         btn->setIconSize(QSize(iconSize, iconSize));
-        btn->setStyleSheet("text-align: left; padding: 10px;");
         btn->setFocusPolicy(Qt::StrongFocus);
-
         btn->setStyleSheet("QPushButton { text-align: left; padding: 10px; border: 1px solid #D4D4D4; background: transparent; }"
                            "QPushButton:hover { background-color: #000080; color: #FFFFFF; }");
 
         QObject::connect(btn, &QPushButton::clicked, [this, i]() {
             QDesktopServices::openUrl(QUrl::fromLocalFile(shortcuts[i].path));
-
             const QWidgetList widgets = QApplication::topLevelWidgets();
-
             for (QWidget *widget : widgets) {
-                if (widget->isWindow()) {
-                    widget->showMinimized();
-                }
+                if (widget->isWindow()) { widget->showMinimized(); }
             }
         });
 
         QObject::connect(btn, &HoverButton::mouseEntered, this, [this, i, btn]() {
-            if( subDirId != i )
-                {
-                if( subDirWindow )
-                {
+            if( subDirId != i ) {
+                if( subDirWindow ) {
                     subDirWindow->closeUpwards();
                     subDirWindow=nullptr;
                     subDirId=-1;
                 }
-                if( shortcuts[i].subDir )
-                {
+                if( shortcuts[i].subDir ) {
                     QPoint pos = btn->mapToGlobal(QPoint(btn->width(), btn->height()));
                     subDirWindow = new SubDirWindow(*shortcuts[i].subDir, iconSize, pos, this);
                     subDirWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -74,34 +62,39 @@ void SubDirWindow::populateGrid() {
                     subDirId=i;
                 }
             }
-
         });
-
         gridLayout->addWidget(btn, i, 0);
     }
-
     mainLayout->addLayout(gridLayout);
 
-    if (shortcuts.size() > 0) {
-        if (auto* firstBtn = qobject_cast<QPushButton*>(gridLayout->itemAt(0)->widget())) {
-            firstBtn->setFocus();
-        }
-    }
-    this->show();
+    // --- FIX APPLIED HERE ---
 
-    int x=leftBottomCorner.x() + 5;
-    int y=leftBottomCorner.y() - this->height() + 5;
+    // 1. Force the layout engine to compute sizes while hidden
+    this->adjustSize();
 
-    QScreen *currentScreen = this->screen();
+    // 2. Compute coordinates safely before displaying the window
+    int x = leftBottomCorner.x() + 5;
+    int y = leftBottomCorner.y() - this->height() + 5;
+
+    QScreen *currentScreen = QGuiApplication::screenAt(leftBottomCorner);
     if (currentScreen) {
         int screenTop = currentScreen->availableGeometry().top();
-        if( y<screenTop )
-        {
-            y=screenTop;
+        if( y < screenTop ) {
+            y = screenTop;
         }
     }
 
-    this->move(x,y);
+    // 3. Move the window to its destination FIRST
+    this->move(x, y);
+
+    // 4. Set this attribute to prevent the window from stealing focus
+    // This stops Windows from firing state changes back to MenuStop's event loop
+    this->setAttribute(Qt::WA_ShowWithoutActivating, true);
+
+    // 5. Show it cleanly in its final position
+    this->show();
+
+    // 6. REMOVED: firstBtn->setFocus() to prevent event thrashing
 }
 
 void SubDirWindow::closeUpwards()

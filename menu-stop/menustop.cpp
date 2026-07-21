@@ -174,7 +174,7 @@ void MenuStop::checkFilesForShortcuts(const QString &path, QVector<Lnk> &shortcu
             )
         {
 
-            Lnk s( fileInfo.absoluteFilePath() );
+            Lnk s( fileInfo.absoluteFilePath(), iconSize );
 
             if( fileInfo.isDir() && ( not fileInfo.absoluteFilePath().endsWith(".lnk", Qt::CaseInsensitive)) )
             {

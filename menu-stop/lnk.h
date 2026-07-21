@@ -7,18 +7,18 @@
 class Lnk
 {
 public:
-    Lnk( QString shortcutPath );
+    Lnk( QString shortcutPath, int iconSz );
     ~Lnk();
     Lnk(const Lnk &other);
     Lnk& operator=(const Lnk &other);
     Lnk(Lnk &&other) noexcept;
     Lnk& operator=(Lnk &&other) noexcept;
     QString path;
-    QIcon icon;
+    QPixmap icon;
     QString name;
     QVector<Lnk> * subDir;
     void reLink( QString rePath );
-
+    int iconSize;
 };
 
 #endif // LNK_H

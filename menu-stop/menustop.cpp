@@ -20,6 +20,7 @@
 #include "hoverbutton.h"
 #include "subdirwindow.h"
 #include <QTimer>
+#include "versiondialog.h"
 
 
 MenuStop::MenuStop(QWidget *parent)
@@ -95,6 +96,8 @@ void MenuStop::populateGrid() {
     banner->setFont(QFont("Consolas"));
     banner->setStyleSheet(banner->styleSheet() + "color: white");
 
+    connect(banner, &VerticalLabel::versionClicked, this, &MenuStop::showVersionDialog);
+
     QGridLayout *gridLayout = new QGridLayout();
     gridLayout->setSpacing(0);
     gridLayout->setContentsMargins(5, 5, 5, 5);
@@ -140,6 +143,14 @@ void MenuStop::populateGrid() {
 
     mainLayout->addWidget(banner);
     mainLayout->addLayout(gridLayout);
+}
+
+void MenuStop::showVersionDialog() {
+    VersionDialog *dialog = new VersionDialog(this);
+    dialog->exec();
+    delete dialog; // Safe layout cleanup immediately after closure
+
+    this->showMinimized();
 }
 
 void MenuStop::readConfig() {
@@ -224,8 +235,15 @@ void MenuStop::changeEvent(QEvent *event)
     if (event->type() == QEvent::ActivationChange) {
         if (!this->isActiveWindow()) {
 
-            if( ! subDirWindow )
-            {
+
+            // CHECK THE FOCUS OWNER: Find out which window took the focus
+            QWidget *activeWin = QApplication::activeWindow();
+
+            // Prevent minimizing if a subDirWindow is open, OR if the focus
+            // belongs to our new modal version popup dialog box
+            bool isOurPopup = (activeWin && activeWin->parent() == this && activeWin->inherits("QDialog"));
+
+            if (!subDirWindow && !isOurPopup) {
                 this->showMinimized();
             }
         }

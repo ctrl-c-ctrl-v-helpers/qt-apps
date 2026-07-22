@@ -28,6 +28,9 @@ protected:
     void changeEvent(QEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
 
+private slots:
+    void showVersionDialog();
+
 private:
     Ui::MenuStop *ui;
     QString dirPath;

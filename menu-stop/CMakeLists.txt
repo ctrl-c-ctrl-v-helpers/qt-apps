@@ -27,6 +27,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         verticallabel.h verticallabel.cpp
         hoverbutton.h hoverbutton.cpp
         subdirwindow.h subdirwindow.cpp
+        versiondialog.h versiondialog.cpp
 
     )
 # Define target properties for Android with Qt 6 as:

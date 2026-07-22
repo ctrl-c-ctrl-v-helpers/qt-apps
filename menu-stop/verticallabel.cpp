@@ -8,6 +8,14 @@
 
 #include "version_GENERATED_.h"
 
+VerticalLabel::VerticalLabel(QWidget *parent)
+    : QLabel(parent)
+    , maxClickableY( 0 )
+{
+    // Crucial: Allows mouseMoveEvent to fire instantly without holding down a click
+    setMouseTracking(true);
+}
+
 void VerticalLabel::paintEvent(QPaintEvent *) {
     QPainter painter(this);
 
@@ -48,6 +56,8 @@ void VerticalLabel::paintEvent(QPaintEvent *) {
     int margin = 10;
     int titleXPosition = margin;
     int versionXPosition = height() - docVersion.idealWidth() - margin;
+    int versionTextWidth = docVersion.idealWidth();
+    maxClickableY = versionTextWidth + margin;
 
     // 6. Draw Title (Centered horizontally across the 30px strip)
     int titleHeight = docTitle.size().height();
@@ -68,8 +78,36 @@ void VerticalLabel::paintEvent(QPaintEvent *) {
     painter.restore();
 }
 
-    // Musimy zamienić wymiary, aby layout poprawnie obliczył miejsce
-    QSize VerticalLabel::sizeHint() const {
-        QSize s = QLabel::sizeHint();
-        return QSize(s.height(), s.width());
+void VerticalLabel::mousePressEvent(QMouseEvent *event) {
+    if (event->button() == Qt::LeftButton) {
+
+        if (event->position().y() <= maxClickableY) {
+            emit versionClicked(); // Emit signal if click lands within the text bounding box
+            return; // Handled!
+        }
     }
+
+    // Pass any other clicks to the standard base class behavior
+    QLabel::mousePressEvent(event);
+}
+
+void VerticalLabel::mouseMoveEvent(QMouseEvent *event) {
+    // 2. Dynamic Hover Check: Flip the cursor shape depending on the coordinates
+    // Qt 6 requires event->position().y()
+    if (event->position().y() <= maxClickableY) {
+        // We are hovering over the version text area
+        setCursor(Qt::PointingHandCursor);
+    } else {
+        // We are hovering over the rest of the vertical sidebar banner
+        setCursor(Qt::ArrowCursor);
+    }
+
+    // Pass the event up to the base class
+    QLabel::mouseMoveEvent(event);
+}
+
+// Musimy zamienić wymiary, aby layout poprawnie obliczył miejsce
+QSize VerticalLabel::sizeHint() const {
+    QSize s = QLabel::sizeHint();
+    return QSize(s.height(), s.width());
+}

@@ -59,6 +59,7 @@ target_include_directories(menu-stop PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 # 2. Force a command to run on every compile by matching it to a non-existent output
 add_custom_command(
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/AlwaysRun"
+	BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/version_GENERATED_.h" 
     COMMAND ${CMAKE_COMMAND} 
         -DSRC_DIR=${CMAKE_CURRENT_SOURCE_DIR} 
         -DBIN_DIR=${CMAKE_CURRENT_BINARY_DIR} 

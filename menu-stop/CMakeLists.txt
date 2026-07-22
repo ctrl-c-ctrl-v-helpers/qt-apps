@@ -49,6 +49,29 @@ endif()
 
 target_link_libraries(menu-stop PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
+
+# --- GUARANTEED EVERY-BUILD VERSION TARGET ---
+
+# 1. Tell the compiler where to find the generated header
+target_include_directories(menu-stop PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+
+# 2. Force a command to run on every compile by matching it to a non-existent output
+add_custom_command(
+    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/AlwaysRun"
+    COMMAND ${CMAKE_COMMAND} 
+        -DSRC_DIR=${CMAKE_CURRENT_SOURCE_DIR} 
+        -DBIN_DIR=${CMAKE_CURRENT_BINARY_DIR} 
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/GenerateVersion.cmake
+)
+
+# 3. Tie the header generation to the main executable
+add_custom_target(generate_version_header DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/AlwaysRun")
+add_dependencies(menu-stop generate_version_header)
+
+
+# -------------------------------------------
+
+
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.

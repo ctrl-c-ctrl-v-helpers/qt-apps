@@ -21,6 +21,7 @@
 #include "subdirwindow.h"
 #include <QTimer>
 
+
 MenuStop::MenuStop(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MenuStop)
@@ -91,8 +92,7 @@ void MenuStop::populateGrid() {
         );
 
     banner->setText(menuName);
-    banner->setFont(QFont("Consolas", 16, QFont::Bold));
-    banner->setAlignment(Qt::AlignBottom | Qt::AlignHCenter);
+    banner->setFont(QFont("Consolas"));
     banner->setStyleSheet(banner->styleSheet() + "color: white");
 
     QGridLayout *gridLayout = new QGridLayout();

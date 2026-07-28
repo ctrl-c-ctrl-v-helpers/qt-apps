@@ -1,3 +1,5 @@
+/* This file was created with AI assistance */
+
 #ifndef HOVERBUTTON_H
 #define HOVERBUTTON_H
 

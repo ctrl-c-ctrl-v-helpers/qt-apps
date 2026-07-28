@@ -1,3 +1,5 @@
+/* This file was created with AI assistance */
+
 #include "verticallabel.h"
 
 
@@ -44,7 +46,7 @@ void VerticalLabel::paintEvent(QPaintEvent *) {
     docTitle.setHtml(text());
 
     // --- ELEMENT 2: THE SMALL VERSION ---
-    QString versionStr = QString::fromUtf8(APP_VERSION);
+    QString versionStr = QString::fromUtf8(APP_VERSION) + " [about]";
     QTextDocument docVersion;
     QFont versionFont = this->font();
     versionFont.setPointSize(10);   // Moved here! Hardcoded or managed inside the widget

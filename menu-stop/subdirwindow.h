@@ -1,3 +1,5 @@
+/* This file was created with AI assistance */
+
 #ifndef MYFRAMELESSWINDOW_H
 #define MYFRAMELESSWINDOW_H
 

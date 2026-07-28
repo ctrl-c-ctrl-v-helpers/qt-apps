@@ -1,3 +1,5 @@
+/* This file was created with AI assistance */
+
 #ifndef LNK_H
 #define LNK_H
 #include <QString>

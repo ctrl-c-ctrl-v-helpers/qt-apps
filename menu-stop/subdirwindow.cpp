@@ -1,3 +1,5 @@
+/* This file was created with AI assistance */
+
 #include "subdirwindow.h"
 #include "hoverbutton.h"
 #include "lnk.h"

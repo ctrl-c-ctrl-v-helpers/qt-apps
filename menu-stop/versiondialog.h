@@ -1,3 +1,5 @@
+/* This file was created with AI assistance */
+
 #ifndef VERSIONDIALOG_H
 #define VERSIONDIALOG_H
 

@@ -1,3 +1,5 @@
+/* This file was created with AI assistance */
+
 #include "menustop.h"
 #include "./ui_menustop.h"
 #include <QSettings>

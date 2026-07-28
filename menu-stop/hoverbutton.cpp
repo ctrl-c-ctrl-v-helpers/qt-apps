@@ -1,3 +1,5 @@
+/* This file was created with AI assistance */
+
 #include "hoverbutton.h"
 
 HoverButton::HoverButton(QWidget *parent) : QPushButton(parent) {}

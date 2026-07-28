@@ -1,3 +1,5 @@
+/* This file was created with AI assistance */
+
 #ifndef VERTICALLABEL_H
 #define VERTICALLABEL_H
 

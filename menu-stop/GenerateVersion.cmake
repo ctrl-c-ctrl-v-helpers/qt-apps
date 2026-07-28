@@ -1,3 +1,5 @@
+# This file was created with AI assistance
+
 # GenerateVersion.cmake
 find_package(Git REQUIRED)
 

@@ -1,3 +1,5 @@
+/* This file was created with AI assistance */
+
 #include "versiondialog.h"
 #include "version_GENERATED_.h"
 #include <QVBoxLayout>
@@ -10,7 +12,7 @@
 
 VersionDialog::VersionDialog(QWidget *parent) : QDialog(parent)
 {
-    setWindowTitle("Application Version");
+    setWindowTitle("Menu Stop 2 +");
     setModal(false); // Crucial: allows focus to switch to other windows
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint); // Removes the '?' button
 
@@ -20,7 +22,7 @@ VersionDialog::VersionDialog(QWidget *parent) : QDialog(parent)
 
     // 2. Fetch and format the version string macro
     QString versionText = QString::fromUtf8(APP_VERSION);
-    QLabel *versionLabel = new QLabel(QString("<b>Current Build:</b><br>%1").arg(versionText), this);
+    QLabel *versionLabel = new QLabel(QString("<b>This application was created with AI assistance.</b><br><b>Current Build:</b> %1").arg(versionText), this);
     versionLabel->setTextInteractionFlags(Qt::TextSelectableByMouse); // Allows manual copying too
     mainLayout->addWidget(versionLabel);
 
@@ -33,9 +35,15 @@ VersionDialog::VersionDialog(QWidget *parent) : QDialog(parent)
     mainLayout->addLayout(buttonLayout);
 
     // 4. Clipboard functionality
-    connect(btnCopy, &QPushButton::clicked, this, [versionText, btnCopy]() {
+    connect(btnCopy, &QPushButton::clicked, this, [versionLabel, btnCopy]() {
         QClipboard *clipboard = QApplication::clipboard();
-        clipboard->setText(versionText);
+
+        QTextDocument doc;
+        doc.setHtml(versionLabel->text());
+
+        QString plainText = doc.toPlainText();
+
+        clipboard->setText(plainText);
     });
 
     // 5. Close action

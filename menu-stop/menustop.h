@@ -1,3 +1,5 @@
+/* This file was created with AI assistance */
+
 #ifndef MENUSTOP_H
 #define MENUSTOP_H
 

@@ -1,3 +1,5 @@
+/* This file was created with AI assistance */
+
 #include "lnk.h"
 
 #include <QFileIconProvider>

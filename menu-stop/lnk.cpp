@@ -12,22 +12,11 @@ Lnk::Lnk( QString shortcutPath, int iconSz )
 {
     QFileInfo fileInfo(shortcutPath);
     name=fileInfo.completeBaseName();
-
-    QFileIconProvider provider;
-    QIcon tempIcon = provider.icon(fileInfo);
-    QPixmap rawPixmap = tempIcon.pixmap(QSize(iconSize, iconSize));
-    icon = QPixmap::fromImage(rawPixmap.toImage());
 }
 
 void Lnk::reLink( QString rePath )
 {
     path += rePath;
-    QFileInfo fileInfo(path);
-
-    QFileIconProvider provider;
-    QIcon tempIcon = provider.icon(fileInfo);
-    QPixmap rawPixmap = tempIcon.pixmap(QSize(iconSize, iconSize));
-    icon = QPixmap::fromImage(rawPixmap.toImage());
 }
 
 Lnk::Lnk(const Lnk &other)

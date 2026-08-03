@@ -23,6 +23,10 @@
 #include "subdirwindow.h"
 #include <QTimer>
 #include "versiondialog.h"
+#include <QStyle>
+#include <QFileIconProvider>
+#include <QFuture>
+#include <QtConcurrent>
 
 
 MenuStop::MenuStop(QWidget *parent)
@@ -46,6 +50,7 @@ MenuStop::MenuStop(QWidget *parent)
     checkFilesForShortcuts( dirPath, shortcuts );
     ui->setupUi(this);
     populateGrid();
+    runIconsThreads( shortcuts );
 
     setWindowTitle(QString("\u200B"));
     setWindowIcon(QIcon( iconPath ));
@@ -56,7 +61,9 @@ MenuStop::MenuStop(QWidget *parent)
     ui->centralwidget->layout()->setSizeConstraint(QLayout::SetFixedSize);
     this->adjustSize();
 
-    this->showMinimized();
+    QTimer::singleShot(3000, this, [this]() {
+        this->showMinimized();
+    });
 
     connect(qApp, &QApplication::focusChanged, this, [this](QWidget *old, QWidget *now) {
         QTimer::singleShot(1000, this, [this]() {
@@ -100,7 +107,7 @@ void MenuStop::populateGrid() {
 
     connect(banner, &VerticalLabel::versionClicked, this, &MenuStop::showVersionDialog);
 
-    QGridLayout *gridLayout = new QGridLayout();
+    gridLayout = new QGridLayout();
     gridLayout->setSpacing(0);
     gridLayout->setContentsMargins(5, 5, 5, 5);
 
@@ -108,7 +115,7 @@ void MenuStop::populateGrid() {
     {
         HoverButton *btn = new HoverButton( shortcuts[i].name );
 
-        btn->setIcon( shortcuts[i].icon );
+        btn->setIcon( style()->standardIcon(QStyle::SP_FileDialogContentsView));
         btn->setIconSize(QSize(iconSize, iconSize));
         btn->setStyleSheet("text-align: left; padding: 10px;");
         btn->setFocusPolicy(Qt::StrongFocus);
@@ -145,6 +152,50 @@ void MenuStop::populateGrid() {
 
     mainLayout->addWidget(banner);
     mainLayout->addLayout(gridLayout);
+}
+
+void MenuStop::runIconsThreads( QVector<Lnk> & shortcuts )
+{
+    for( int i=0; i<shortcuts.size(); ++i )
+    {
+        if( shortcuts[i].subDir )
+        {
+            runIconsThreads( *shortcuts[i].subDir );
+        }
+
+        QFutureWatcher<QImage> *watcher = new QFutureWatcher<QImage>(this);
+
+        // 2. Connect the finished signal back to the main GUI thread
+        connect(watcher, &QFutureWatcher<QImage>::finished, this, [this, watcher, &shortcuts, i]() {
+            // Get the generated image safely on the main thread
+            QImage loadedImage = watcher->result();
+
+            if (!loadedImage.isNull()) {
+                // Convert to QPixmap and set the icon safely on the GUI thread
+                shortcuts[i].icon=QPixmap::fromImage(loadedImage);
+
+                if( &this->shortcuts == &shortcuts ) {
+                    ((HoverButton *)(this->gridLayout->itemAtPosition(i, 1)->widget()))->setIcon( shortcuts[i].icon );
+                }
+            }
+
+            // Clean up the watcher memory automatically
+            watcher->deleteLater();
+        });
+
+        // 3. Fire off the thread task using a lambda
+        QFuture<QImage> future = QtConcurrent::run([&shortcuts, i, this]() {
+            // --- RUNNING ON BACKGROUND THREAD ---
+            QFileInfo fileInfo(shortcuts[i].path);
+            QFileIconProvider provider;
+            QIcon tempIcon = provider.icon(fileInfo);
+            return tempIcon.pixmap(QSize(iconSize, iconSize)).toImage();
+            // ------------------------------------
+        });
+
+        // 4. Assign the future to the watcher to kick off the monitoring process
+        watcher->setFuture(future);
+    }
 }
 
 void MenuStop::showVersionDialog() {

@@ -23,6 +23,7 @@ public:
     ~MenuStop();
     void readConfig();
     void checkFilesForShortcuts(const QString &path, QVector<Lnk> & shortcuts);
+    void runIconsThreads( QVector<Lnk> & shortcuts );
     void populateGrid();
     int getXPos( int x );
 
@@ -48,5 +49,7 @@ private:
 
     SubDirWindow * subDirWindow;
     int subDirId;
+
+    QGridLayout *gridLayout;
 };
 #endif // MENUSTOP_H

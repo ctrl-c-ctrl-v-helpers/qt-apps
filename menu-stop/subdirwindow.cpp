@@ -5,6 +5,8 @@
 #include "lnk.h"
 #include <QDesktopServices>
 #include <QApplication>
+#include <QStyle>
+
 
 SubDirWindow::SubDirWindow(QVector<Lnk> & shortc, int iconSz, QPoint leftBottom, QWidget *parent)
     : QDialog(parent)
@@ -35,7 +37,15 @@ void SubDirWindow::populateGrid() {
 
     for( int i=0; i<shortcuts.size(); ++i ) {
         HoverButton *btn = new HoverButton( shortcuts[i].name );
+
+        if( !shortcuts[i].icon.isNull() )
+        {
         btn->setIcon( shortcuts[i].icon );
+        }
+        else
+        {
+        btn->setIcon( style()->standardIcon(QStyle::SP_FileDialogContentsView));
+        }
         btn->setIconSize(QSize(iconSize, iconSize));
         btn->setFocusPolicy(Qt::StrongFocus);
         btn->setStyleSheet("QPushButton { text-align: left; padding: 10px; border: 1px solid #D4D4D4; background: transparent; }"

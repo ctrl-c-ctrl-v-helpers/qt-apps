@@ -8,17 +8,17 @@
 #include <QStyle>
 
 
-SubDirWindow::SubDirWindow(QVector<Lnk> & shortc, int iconSz, QPoint leftBottom, QWidget *parent)
+SubDirWindow::SubDirWindow(QVector<Lnk> & shortc, Config *configuration, QPoint leftBottom, QWidget *parent)
     : QDialog(parent)
     , subDirWindow(nullptr)
     , shortcuts(shortc)
-    , iconSize(iconSz)
+    , config(configuration)
     , leftBottomCorner( leftBottom )
     , subDirId(-1)
 {
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
     setAttribute(Qt::WA_DeleteOnClose);
-
+    this->setStyleSheet(QString("SubDirWindow { border: 1px solid %1; background-color: %2}").arg(config->menuColorBorder, config->menuColorBackground));
 }
 
 SubDirWindow::~SubDirWindow()
@@ -46,10 +46,11 @@ void SubDirWindow::populateGrid() {
         {
         btn->setIcon( style()->standardIcon(QStyle::SP_FileDialogContentsView));
         }
-        btn->setIconSize(QSize(iconSize, iconSize));
+        btn->setIconSize(QSize(config->iconSize, config->iconSize));
         btn->setFocusPolicy(Qt::StrongFocus);
-        btn->setStyleSheet("QPushButton { text-align: left; padding: 10px; border: 1px solid #D4D4D4; background: transparent; }"
-                           "QPushButton:hover { background-color: #000080; color: #FFFFFF; }");
+        btn->setStyleSheet(QString("QPushButton { text-align: left; padding: 10px; border: 1px solid %1; background: transparent; color: %2}"
+                                   "QPushButton:hover { background-color: %3; color: %4; }")
+                               .arg(config->menuColorBorder, config->menuColorText, config->menuColorHover, config->menuColorTextHover));
 
         QObject::connect(btn, &QPushButton::clicked, [this, i]() {
             QDesktopServices::openUrl(QUrl::fromLocalFile(shortcuts[i].path));
@@ -68,7 +69,7 @@ void SubDirWindow::populateGrid() {
                 }
                 if( shortcuts[i].subDir ) {
                     QPoint pos = btn->mapToGlobal(QPoint(btn->width(), btn->height()));
-                    subDirWindow = new SubDirWindow(*shortcuts[i].subDir, iconSize, pos, this);
+                    subDirWindow = new SubDirWindow(*shortcuts[i].subDir, config, pos, this);
                     subDirWindow->setAttribute(Qt::WA_DeleteOnClose);
                     subDirWindow->populateGrid();
                     subDirId=i;

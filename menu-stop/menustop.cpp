@@ -2,7 +2,7 @@
 
 #include "menustop.h"
 #include "./ui_menustop.h"
-#include <QSettings>
+
 #include <QString>
 #include <QStringList>
 #include <QDebug>
@@ -35,6 +35,7 @@ MenuStop::MenuStop(QWidget *parent)
     , subDirWindow( nullptr )
     , subDirId(-1)
 {
+    QString configPath;
     QStringList args = QCoreApplication::arguments();
     if( args.size() == 2 )
     {
@@ -46,17 +47,17 @@ MenuStop::MenuStop(QWidget *parent)
     }
 
 
-    readConfig();
-    checkFilesForShortcuts( dirPath, shortcuts );
+    config = new Config(configPath);
+    checkFilesForShortcuts( config->dirPath, shortcuts );
     ui->setupUi(this);
     populateGrid();
     runIconsThreads( shortcuts );
 
     setWindowTitle(QString("\u200B"));
-    setWindowIcon(QIcon( iconPath ));
+    setWindowIcon(QIcon( config->iconPath ));
 
     this->setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
-    this->setStyleSheet("QMainWindow { border: 1px solid #D4D4D4; }");
+    this->setStyleSheet(QString("QMainWindow { border: 1px solid %1; background-color: %2}").arg(config->menuColorBorder, config->menuColorBackground));
 
     ui->centralwidget->layout()->setSizeConstraint(QLayout::SetFixedSize);
     this->adjustSize();
@@ -82,6 +83,7 @@ MenuStop::MenuStop(QWidget *parent)
 
 MenuStop::~MenuStop()
 {
+    delete config;
     delete ui;
 }
 
@@ -91,17 +93,16 @@ void MenuStop::populateGrid() {
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
-
     VerticalLabel *banner = new VerticalLabel();
     banner->setFixedWidth(30); // Szerokość paska
     banner->setStyleSheet(
         QString(
         "background: qlineargradient(x1:0, y1:1, x2:0, y2:0, stop:0 %1, stop:1 %2);"
         "border-right: 1px solid #ffffff;"
-            ).arg(menuColorStart, menuColorStop)
+            ).arg(config->menuColorStart, config->menuColorStop)
         );
 
-    banner->setText(menuName);
+    banner->setText(config->menuName);
     banner->setFont(QFont("Consolas"));
     banner->setStyleSheet(banner->styleSheet() + "color: white");
 
@@ -116,12 +117,13 @@ void MenuStop::populateGrid() {
         HoverButton *btn = new HoverButton( shortcuts[i].name );
 
         btn->setIcon( style()->standardIcon(QStyle::SP_FileDialogContentsView));
-        btn->setIconSize(QSize(iconSize, iconSize));
+        btn->setIconSize(QSize(config->iconSize, config->iconSize));
         btn->setStyleSheet("text-align: left; padding: 10px;");
         btn->setFocusPolicy(Qt::StrongFocus);
 
-        btn->setStyleSheet("QPushButton { text-align: left; padding: 10px; border: 1px solid #D4D4D4; background: transparent; }"
-                           "QPushButton:hover { background-color: #000080; color: #FFFFFF; }");
+        btn->setStyleSheet(QString("QPushButton { text-align: left; padding: 10px; border: 1px solid %1; background: transparent; color: %2}"
+                                   "QPushButton:hover { background-color: %3; color: %4; }")
+                               .arg(config->menuColorBorder, config->menuColorText, config->menuColorHover, config->menuColorTextHover));
 
         QObject::connect(btn, &QPushButton::clicked, [this, i]() {
             QDesktopServices::openUrl(QUrl::fromLocalFile(shortcuts[i].path));
@@ -139,7 +141,7 @@ void MenuStop::populateGrid() {
                 if( shortcuts[i].subDir )
                 {
                     QPoint pos = btn->mapToGlobal(QPoint(btn->width(), btn->height()));
-                    subDirWindow = new SubDirWindow(*shortcuts[i].subDir, iconSize, pos, this);
+                    subDirWindow = new SubDirWindow(*shortcuts[i].subDir, config, pos, this);
                     subDirWindow->setAttribute(Qt::WA_DeleteOnClose);
                     subDirWindow->populateGrid();
                     subDirId=i;
@@ -189,7 +191,7 @@ void MenuStop::runIconsThreads( QVector<Lnk> & shortcuts )
             QFileInfo fileInfo(shortcuts[i].path);
             QFileIconProvider provider;
             QIcon tempIcon = provider.icon(fileInfo);
-            return tempIcon.pixmap(QSize(iconSize, iconSize)).toImage();
+            return tempIcon.pixmap(QSize(config->iconSize, config->iconSize)).toImage();
             // ------------------------------------
         });
 
@@ -206,23 +208,7 @@ void MenuStop::showVersionDialog() {
     this->showMinimized();
 }
 
-void MenuStop::readConfig() {
-    QSettings settings(configPath, QSettings::IniFormat);
-    QString srcDir = settings.value("Settings/SrcDir", "").toString();
-    //QString nativePath = QDir::toNativeSeparators(srcDir);
 
-    dirPath = srcDir;
-    windowOffsetY = settings.value("Settings/OffsetY", 768).toInt();;
-
-    iconSize = settings.value("Settings/IconSize", 24).toInt();
-
-    iconPath =  settings.value("Settings/Icon", "").toString();
-
-    menuName = settings.value("Settings/MenuName", "").toString();
-
-    menuColorStart = settings.value("Settings/MenuColorStart", "").toString();
-    menuColorStop = settings.value("Settings/MenuColorStop", "").toString();
-}
 
 void MenuStop::checkFilesForShortcuts(const QString &path, QVector<Lnk> &shortcuts) {
     QDir directory(path);
@@ -238,7 +224,7 @@ void MenuStop::checkFilesForShortcuts(const QString &path, QVector<Lnk> &shortcu
             )
         {
 
-            Lnk s( fileInfo.absoluteFilePath(), iconSize );
+            Lnk s( fileInfo.absoluteFilePath(), config->iconSize );
 
             if( fileInfo.isDir() && ( not fileInfo.absoluteFilePath().endsWith(".lnk", Qt::CaseInsensitive)) )
             {
@@ -310,7 +296,7 @@ void MenuStop::changeEvent(QEvent *event)
                     int screenTop = screenAtCursor->availableGeometry().top();
 
                     int topLeftX = getXPos( cursorGlobalPos.x() );
-                    int topLeftY = screenTop + screenHeight - this->height() - windowOffsetY;
+                    int topLeftY = screenTop + screenHeight - this->height() - config->windowOffsetY;
                     this->move(topLeftX, topLeftY);
                 }
             }

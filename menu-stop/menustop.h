@@ -7,6 +7,7 @@
 #include "lnk.h"
 #include <QVector>
 #include "subdirwindow.h"
+#include "config.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -21,7 +22,6 @@ class MenuStop : public QMainWindow
 public:
     MenuStop(QWidget *parent = nullptr);
     ~MenuStop();
-    void readConfig();
     void checkFilesForShortcuts(const QString &path, QVector<Lnk> & shortcuts);
     void runIconsThreads( QVector<Lnk> & shortcuts );
     void populateGrid();
@@ -36,20 +36,17 @@ private slots:
 
 private:
     Ui::MenuStop *ui;
-    QString dirPath;
-    QString iconPath;
-    QString configPath;
-    QString menuName;
-    int windowOffsetY;
+
     QVector<Lnk> shortcuts;
-    int iconSize;
+
     QVector<int> xPositions;
-    QString menuColorStart;
-    QString menuColorStop;
+
 
     SubDirWindow * subDirWindow;
     int subDirId;
 
     QGridLayout *gridLayout;
+
+    Config *config;
 };
 #endif // MENUSTOP_H

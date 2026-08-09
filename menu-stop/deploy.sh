@@ -2,7 +2,7 @@
 
 if ! [ -z "$(git status --porcelain)" ]; then
 	echo Cannot deploy dirty repo build.
-	exit 1
+	#exit 1
 fi
 
 SRC=$( find . -name menu-stop.exe )

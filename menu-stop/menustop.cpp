@@ -27,6 +27,7 @@
 #include <QFileIconProvider>
 #include <QFuture>
 #include <QtConcurrent>
+#include <QMessageBox>
 
 
 MenuStop::MenuStop(QWidget *parent)
@@ -46,8 +47,14 @@ MenuStop::MenuStop(QWidget *parent)
         configPath="menu-stop.ini";
     }
 
-
     config = new Config(configPath);
+
+    if( config->dirPath.isEmpty() )
+    {
+        QMessageBox::critical(this, "menu-stop.exe", "Error:\nShortcuts dir path is empty / menu-stop.ini file is missing." );
+        throw std::invalid_argument("Shortcuts dir path is empty");
+    }
+
     checkFilesForShortcuts( config->dirPath, shortcuts );
     ui->setupUi(this);
     populateGrid();
@@ -329,6 +336,15 @@ void MenuStop::keyPressEvent(QKeyEvent *event) {
     else if( event->key() == Qt::Key_Q)
     {
         qApp->quit();
+    }
+    else if( event->key() == Qt::Key_F5)
+    {
+        QString shortcutPwd = QDir::currentPath();
+        QString appPath = QCoreApplication::applicationFilePath();
+        QStringList args = QCoreApplication::arguments();
+        args.removeFirst();
+        QProcess::startDetached(appPath, args, shortcutPwd);
+        QCoreApplication::quit();
     }
     else
     {

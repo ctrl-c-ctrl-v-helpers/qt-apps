@@ -48,5 +48,7 @@ private:
     QGridLayout *gridLayout;
 
     Config *config;
+
+    int iconThreadsNum;
 };
 #endif // MENUSTOP_H

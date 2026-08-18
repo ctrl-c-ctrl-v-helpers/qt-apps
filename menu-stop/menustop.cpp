@@ -35,6 +35,7 @@ MenuStop::MenuStop(QWidget *parent)
     , ui(new Ui::MenuStop)
     , subDirWindow( nullptr )
     , subDirId(-1)
+    , iconThreadsNum(0)
 {
     QString configPath;
     QStringList args = QCoreApplication::arguments();
@@ -61,7 +62,6 @@ MenuStop::MenuStop(QWidget *parent)
     runIconsThreads( shortcuts );
 
     setWindowTitle(QString("\u200B"));
-    setWindowIcon(QIcon( config->iconPath ));
 
     this->setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
     this->setStyleSheet(QString("QMainWindow { border: 1px solid %1; background-color: %2}").arg(config->menuColorBorder, config->menuColorBackground));
@@ -172,6 +172,8 @@ void MenuStop::runIconsThreads( QVector<Lnk> & shortcuts )
             runIconsThreads( *shortcuts[i].subDir );
         }
 
+        ++iconThreadsNum;
+
         QFutureWatcher<QImage> *watcher = new QFutureWatcher<QImage>(this);
 
         // 2. Connect the finished signal back to the main GUI thread
@@ -183,8 +185,15 @@ void MenuStop::runIconsThreads( QVector<Lnk> & shortcuts )
                 // Convert to QPixmap and set the icon safely on the GUI thread
                 shortcuts[i].icon=QPixmap::fromImage(loadedImage);
 
+                --iconThreadsNum;
+
                 if( &this->shortcuts == &shortcuts ) {
                     ((HoverButton *)(this->gridLayout->itemAtPosition(i, 1)->widget()))->setIcon( shortcuts[i].icon );
+                }
+
+                if( iconThreadsNum == 0 )
+                {
+                    setWindowIcon(QIcon( config->iconPath ));
                 }
             }
 

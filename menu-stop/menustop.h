@@ -57,5 +57,10 @@ private:
     int iconThreadsNum;
 
     const int ID_CTRL_SPACE = 1002;
+
+    bool activatedByCtrlSpace;
+
+    bool ctrlSpaceRegistered;
+
 };
 #endif // MENUSTOP_H

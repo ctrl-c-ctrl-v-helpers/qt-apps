@@ -36,6 +36,8 @@ MenuStop::MenuStop(QWidget *parent)
     , subDirWindow( nullptr )
     , subDirId(-1)
     , iconThreadsNum(0)
+    , activatedByCtrlSpace(true)
+    , ctrlSpaceRegistered(false)
 {
     QString configPath;
     QStringList args = QCoreApplication::arguments();
@@ -58,6 +60,16 @@ MenuStop::MenuStop(QWidget *parent)
 
     checkFilesForShortcuts( config->dirPath, shortcuts );
     ui->setupUi(this);
+
+    HWND hwnd = (HWND)this->winId();
+
+    // 1. Rejestracja: Ctrl + Lewy Win
+    BOOL regLeft = RegisterHotKey(hwnd, ID_CTRL_SPACE, MOD_CONTROL, VK_SPACE);
+
+    if (regLeft) {
+        ctrlSpaceRegistered = true;
+    }
+
     populateGrid();
     runIconsThreads( shortcuts );
 
@@ -71,6 +83,7 @@ MenuStop::MenuStop(QWidget *parent)
 
     QTimer::singleShot(3000, this, [this]() {
         this->showMinimized();
+        this->activatedByCtrlSpace = false;
     });
 
     connect(qApp, &QApplication::focusChanged, this, [this](QWidget *old, QWidget *now) {
@@ -83,23 +96,13 @@ MenuStop::MenuStop(QWidget *parent)
                     subDirId=-1;
                 }
                 this->showMinimized();
+                this->activatedByCtrlSpace = false;
             }
         });
     });
 
 
 
-    HWND hwnd = (HWND)this->winId();
-
-    // 1. Rejestracja: Ctrl + Lewy Win
-    BOOL regLeft = RegisterHotKey(hwnd, ID_CTRL_SPACE, MOD_CONTROL, VK_SPACE);
-
-    if (regLeft) {
-        qDebug() << "Globalny skrót Ctrl + Win (sam) zarejestrowany poprawnie!";
-    } else {
-        qDebug() << "Błąd rejestracji. Lewy:" << regLeft
-                 << "Kod błędu WinAPI:" << GetLastError();
-    }
 }
 
 bool MenuStop::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
@@ -109,11 +112,15 @@ bool MenuStop::nativeEvent(const QByteArray &eventType, void *message, qintptr *
     if (eventType == "windows_generic_MSG" || eventType == "windows_dispatcher_MSG") {
         MSG *msg = static_cast<MSG*>(message);
 
+
+
         if (msg->message == WM_HOTKEY) {
             int hotkeyId = static_cast<int>(msg->wParam);
 
             // Sprawdzamy, czy wywołano któryś z naszych dwóch skrótów
             if (hotkeyId == ID_CTRL_SPACE ) {
+
+                this->activatedByCtrlSpace = true;
 
                 HWND hwnd = (HWND)this->winId();
 
@@ -163,7 +170,12 @@ void MenuStop::populateGrid() {
             ).arg(config->menuColorStart, config->menuColorStop)
         );
 
-    banner->setText(config->menuName);
+    QString menuName;
+    if( ! ctrlSpaceRegistered ) {
+        menuName = "CTRL+SPACE not registered! ";
+    }
+    menuName += config->menuName;
+    banner->setText(menuName);
     banner->setFont(QFont("Consolas"));
     banner->setStyleSheet(banner->styleSheet() + "color: white");
 
@@ -189,6 +201,7 @@ void MenuStop::populateGrid() {
         QObject::connect(btn, &QPushButton::clicked, [this, i]() {
             QDesktopServices::openUrl(QUrl::fromLocalFile(shortcuts[i].path));
             this->showMinimized();
+            this->activatedByCtrlSpace = false;
         });
         QObject::connect(btn, &HoverButton::mouseEntered, this, [this, i, btn]() {
             if( subDirId != i )
@@ -281,6 +294,7 @@ void MenuStop::showVersionDialog() {
     delete dialog; // Safe layout cleanup immediately after closure
 
     this->showMinimized();
+    this->activatedByCtrlSpace = false;
 }
 
 
@@ -369,20 +383,37 @@ void MenuStop::changeEvent(QEvent *event)
 
             if (!subDirWindow && !isOurPopup) {
                 this->showMinimized();
+                this->activatedByCtrlSpace = false;
             }
         }
         else
         {
-            if( ! underMouse() ) {
+            if( activatedByCtrlSpace )
+            {
                 QPoint cursorGlobalPos = QCursor::pos();
                 QScreen *screenAtCursor = QGuiApplication::screenAt(cursorGlobalPos);
                 if (screenAtCursor) {
                     int screenHeight = screenAtCursor->availableGeometry().height();
                     int screenTop = screenAtCursor->availableGeometry().top();
 
-                    int topLeftX = getXPos( cursorGlobalPos.x() );
+                    int topLeftX = getXPos( config->windowOffsetX );
                     int topLeftY = screenTop + screenHeight - this->height() - config->windowOffsetY;
                     this->move(topLeftX, topLeftY);
+                }
+            }
+            else
+            {
+                if( ! underMouse() ) {
+                    QPoint cursorGlobalPos = QCursor::pos();
+                    QScreen *screenAtCursor = QGuiApplication::screenAt(cursorGlobalPos);
+                    if (screenAtCursor) {
+                        int screenHeight = screenAtCursor->availableGeometry().height();
+                        int screenTop = screenAtCursor->availableGeometry().top();
+
+                        int topLeftX = getXPos( cursorGlobalPos.x() );
+                        int topLeftY = screenTop + screenHeight - this->height() - config->windowOffsetY;
+                        this->move(topLeftX, topLeftY);
+                    }
                 }
             }
         }
@@ -410,6 +441,7 @@ void MenuStop::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_Escape)
     {
         this->showMinimized();
+        this->activatedByCtrlSpace = false;
     }
     else if( event->key() == Qt::Key_Q)
     {
@@ -447,7 +479,6 @@ void MenuStop::keyPressEvent(QKeyEvent *event) {
         QWidget *focusedWidget = QApplication::focusWidget();
 
         if (focusedWidget) {
-            qDebug() << "szczalła wciśnięty na widgecie:" << focusedWidget->objectName();
 
             HoverButton *button = qobject_cast<HoverButton*>(focusedWidget);
             if (button) {

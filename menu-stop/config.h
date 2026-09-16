@@ -12,6 +12,7 @@ public:
     QString iconPath;
     QString menuName;
     int windowOffsetY;
+    int windowOffsetX;
     QString menuColorStart;
     QString menuColorStop;
     int iconSize;
@@ -20,6 +21,8 @@ public:
     QString menuColorHover;
     QString menuColorBackground;
     QString menuColorBorder;
+
+
 };
 
 #endif // CONFIG_H

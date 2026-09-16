@@ -9,6 +9,7 @@ Config::Config(QString configPath) {
 
     dirPath = srcDir;
     windowOffsetY = settings.value("Settings/OffsetY", 768).toInt();;
+    windowOffsetX = settings.value("Settings/OffsetX", 70).toInt();;
 
     iconSize = settings.value("Settings/IconSize", 24).toInt();
 
@@ -25,6 +26,7 @@ Config::Config(QString configPath) {
 
     menuColorBackground = settings.value("Settings/MenuColorBackground", "").toString();
     menuColorBorder = settings.value("Settings/MenuColorBorder", "").toString();
+
 }
 
 

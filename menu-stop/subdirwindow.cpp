@@ -72,6 +72,11 @@ void SubDirWindow::populateGrid() {
                     subDirWindow = new SubDirWindow(*shortcuts[i].subDir, config, pos, this);
                     subDirWindow->setAttribute(Qt::WA_DeleteOnClose);
                     subDirWindow->populateGrid();
+
+                    subDirWindow->show();
+                    subDirWindow->raise();
+                    subDirWindow->activateWindow();
+
                     subDirId=i;
                 }
             }
@@ -110,6 +115,15 @@ void SubDirWindow::populateGrid() {
     // 6. REMOVED: firstBtn->setFocus() to prevent event thrashing
 }
 
+void SubDirWindow::requestCloseChild()
+{
+    if (subDirWindow) {
+        subDirWindow->closeUpwards();
+        subDirWindow = nullptr;
+        subDirId = -1;
+    }
+}
+
 void SubDirWindow::closeUpwards()
 {
     QVector<SubDirWindow *> subDirWindows;
@@ -131,10 +145,18 @@ void SubDirWindow::closeUpwards()
 void SubDirWindow::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_Escape)
     {
+        const QWidgetList widgets = QApplication::topLevelWidgets();
+        for (QWidget *widget : widgets) {
+            if (widget->isWindow()) { widget->showMinimized(); }
+        }
         event->accept();
         return;
     }
-    if ((event->key() == Qt::Key_F4 && (event->modifiers() & Qt::AltModifier)) or (event->key() == Qt::Key_Q)) {
+    if (event->key() == Qt::Key_Left)
+    {
+        this->close();
+    }
+    if (event->key() == Qt::Key_Q) {
         qApp->quit(); // Natychmiastowe, bezpieczne wyjście z aplikacji
         return;
     }

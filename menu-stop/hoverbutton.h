@@ -15,15 +15,18 @@ public:
     explicit HoverButton(QWidget *parent = nullptr);
     explicit HoverButton(const QString &text, QWidget *parent = nullptr);
 
+    // Nadpisujemy zdarzenia wejścia i wyjścia myszy
+    void enterEvent(QEnterEvent *event) override;
+    void leaveEvent(QEvent *event) override;
+
 signals:
     // Sygnał, który wyemitujemy, gdy mysz najedzie na przycisk
     void mouseEntered();
     void mouseLeft();
 
 protected:
-    // Nadpisujemy zdarzenia wejścia i wyjścia myszy
-    void enterEvent(QEnterEvent *event) override;
-    void leaveEvent(QEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
+
 };
 
 #endif // HOVERBUTTON_H

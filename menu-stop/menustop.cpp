@@ -86,10 +86,64 @@ MenuStop::MenuStop(QWidget *parent)
             }
         });
     });
+
+
+
+    HWND hwnd = (HWND)this->winId();
+
+    // 1. Rejestracja: Ctrl + Lewy Win
+    BOOL regLeft = RegisterHotKey(hwnd, ID_CTRL_SPACE, MOD_CONTROL, VK_SPACE);
+
+    if (regLeft) {
+        qDebug() << "Globalny skrót Ctrl + Win (sam) zarejestrowany poprawnie!";
+    } else {
+        qDebug() << "Błąd rejestracji. Lewy:" << regLeft
+                 << "Kod błędu WinAPI:" << GetLastError();
+    }
+}
+
+bool MenuStop::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
+{
+    Q_UNUSED(result);
+
+    if (eventType == "windows_generic_MSG" || eventType == "windows_dispatcher_MSG") {
+        MSG *msg = static_cast<MSG*>(message);
+
+        if (msg->message == WM_HOTKEY) {
+            int hotkeyId = static_cast<int>(msg->wParam);
+
+            // Sprawdzamy, czy wywołano któryś z naszych dwóch skrótów
+            if (hotkeyId == ID_CTRL_SPACE ) {
+
+                HWND hwnd = (HWND)this->winId();
+
+                // 1. Jeśli okno było zminimalizowane do paska, przywróć je (SW_RESTORE).
+                // Jeśli było tylko ukryte (hide), użyj SW_SHOW.
+                if (this->isMinimized()) {
+                    ShowWindow(hwnd, SW_RESTORE);
+                } else {
+                    ShowWindow(hwnd, SW_SHOW);
+                }
+
+                // 2. Wymuś wysunięcie okna na sam wierzch (Przełamuje blokadę Windows)
+                SetForegroundWindow(hwnd);
+
+                // 3. Poinformuj Qt o zmianie stanu, aby zaktualizowało focus komponentów wewnątrz okna
+                this->raise();
+
+                return true; // Zwracamy true, aby skrót nie szedł dalej do systemu
+            }
+        }
+    }
+
+    return QMainWindow::nativeEvent(eventType, message, result);
 }
 
 MenuStop::~MenuStop()
 {
+    HWND hwnd = (HWND)this->winId();
+    UnregisterHotKey(hwnd, ID_CTRL_SPACE);
+
     delete config;
     delete ui;
 }
@@ -151,6 +205,11 @@ void MenuStop::populateGrid() {
                     subDirWindow = new SubDirWindow(*shortcuts[i].subDir, config, pos, this);
                     subDirWindow->setAttribute(Qt::WA_DeleteOnClose);
                     subDirWindow->populateGrid();
+
+                    subDirWindow->show();
+                    subDirWindow->raise();
+                    subDirWindow->activateWindow();
+
                     subDirId=i;
                 }
             }
@@ -284,6 +343,16 @@ void MenuStop::checkFilesForShortcuts(const QString &path, QVector<Lnk> &shortcu
 
 }
 
+void MenuStop::requestCloseChild()
+{
+    if (subDirWindow) {
+        subDirWindow->closeUpwards();
+        subDirWindow = nullptr;
+        subDirId = -1;
+    }
+}
+
+
 void MenuStop::changeEvent(QEvent *event)
 {
 
@@ -340,7 +409,7 @@ int MenuStop::getXPos( int x ) {
 void MenuStop::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_Escape)
     {
-        event->accept();
+        this->showMinimized();
     }
     else if( event->key() == Qt::Key_Q)
     {
@@ -348,12 +417,45 @@ void MenuStop::keyPressEvent(QKeyEvent *event) {
     }
     else if( event->key() == Qt::Key_F5)
     {
+        HWND hwnd = (HWND)this->winId();
+        UnregisterHotKey(hwnd, ID_CTRL_SPACE);
+
         QString shortcutPwd = QDir::currentPath();
         QString appPath = QCoreApplication::applicationFilePath();
         QStringList args = QCoreApplication::arguments();
         args.removeFirst();
         QProcess::startDetached(appPath, args, shortcutPwd);
         QCoreApplication::quit();
+    }
+    else if(event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
+    {
+        QWidget *focusedWidget = QApplication::focusWidget();
+
+        if (focusedWidget) {
+            qDebug() << "Enter wciśnięty na widgecie:" << focusedWidget->objectName();
+
+            HoverButton *button = qobject_cast<HoverButton*>(focusedWidget);
+            if (button) {
+                button->click(); // Wywoła sygnał clicked() podpięty do tego przycisku
+                event->accept();
+                return;
+            }
+        }
+    }
+    else if(event->key() == Qt::Key_Right)
+    {
+        QWidget *focusedWidget = QApplication::focusWidget();
+
+        if (focusedWidget) {
+            qDebug() << "szczalła wciśnięty na widgecie:" << focusedWidget->objectName();
+
+            HoverButton *button = qobject_cast<HoverButton*>(focusedWidget);
+            if (button) {
+                button->enterEvent( nullptr ); // Wywoła sygnał clicked() podpięty do tego przycisku
+                event->accept();
+                return;
+            }
+        }
     }
     else
     {

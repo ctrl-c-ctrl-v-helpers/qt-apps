@@ -20,6 +20,8 @@ public:
     ~SubDirWindow();
     void closeUpwards();
 
+    void requestCloseChild();
+
 protected:
     void keyPressEvent(QKeyEvent *event) override;
 

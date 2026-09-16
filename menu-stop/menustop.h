@@ -8,6 +8,7 @@
 #include <QVector>
 #include "subdirwindow.h"
 #include "config.h"
+#include <windows.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -27,9 +28,13 @@ public:
     void populateGrid();
     int getXPos( int x );
 
+    void requestCloseChild();
+
 protected:
     void changeEvent(QEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
+
+    bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
 
 private slots:
     void showVersionDialog();
@@ -50,5 +55,7 @@ private:
     Config *config;
 
     int iconThreadsNum;
+
+    const int ID_CTRL_SPACE = 1002;
 };
 #endif // MENUSTOP_H

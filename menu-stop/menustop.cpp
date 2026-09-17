@@ -120,24 +120,31 @@ bool MenuStop::nativeEvent(const QByteArray &eventType, void *message, qintptr *
             // Sprawdzamy, czy wywołano któryś z naszych dwóch skrótów
             if (hotkeyId == ID_CTRL_SPACE ) {
 
-                this->activatedByCtrlSpace = true;
+                if( this->isMinimized() || this->isHidden() )
+                {
+                    this->activatedByCtrlSpace = true;
 
-                HWND hwnd = (HWND)this->winId();
+                    HWND hwnd = (HWND)this->winId();
 
-                // 1. Jeśli okno było zminimalizowane do paska, przywróć je (SW_RESTORE).
-                // Jeśli było tylko ukryte (hide), użyj SW_SHOW.
-                if (this->isMinimized()) {
-                    ShowWindow(hwnd, SW_RESTORE);
-                } else {
-                    ShowWindow(hwnd, SW_SHOW);
+                    // 1. Jeśli okno było zminimalizowane do paska, przywróć je (SW_RESTORE).
+                    // Jeśli było tylko ukryte (hide), użyj SW_SHOW.
+                    if (this->isMinimized()) {
+                        ShowWindow(hwnd, SW_RESTORE);
+                    } else {
+                        ShowWindow(hwnd, SW_SHOW);
+                    }
+
+                    // 2. Wymuś wysunięcie okna na sam wierzch (Przełamuje blokadę Windows)
+                    SetForegroundWindow(hwnd);
+
+                    // 3. Poinformuj Qt o zmianie stanu, aby zaktualizowało focus komponentów wewnątrz okna
+                    this->raise();
                 }
-
-                // 2. Wymuś wysunięcie okna na sam wierzch (Przełamuje blokadę Windows)
-                SetForegroundWindow(hwnd);
-
-                // 3. Poinformuj Qt o zmianie stanu, aby zaktualizowało focus komponentów wewnątrz okna
-                this->raise();
-
+                else
+                {
+                    this->showMinimized();
+                    this->activatedByCtrlSpace = false;
+                }
                 return true; // Zwracamy true, aby skrót nie szedł dalej do systemu
             }
         }
@@ -172,7 +179,7 @@ void MenuStop::populateGrid() {
 
     QString menuName;
     if( ! ctrlSpaceRegistered ) {
-        menuName = "CTRL+SPACE not registered! ";
+        menuName = "NO CTRL+SPACE! ";
     }
     menuName += config->menuName;
     banner->setText(menuName);
@@ -391,15 +398,30 @@ void MenuStop::changeEvent(QEvent *event)
             if( activatedByCtrlSpace )
             {
                 QPoint cursorGlobalPos = QCursor::pos();
-                QScreen *screenAtCursor = QGuiApplication::screenAt(cursorGlobalPos);
-                if (screenAtCursor) {
-                    int screenHeight = screenAtCursor->availableGeometry().height();
-                    int screenTop = screenAtCursor->availableGeometry().top();
+                QRect screen;
 
-                    int topLeftX = getXPos( config->windowOffsetX );
-                    int topLeftY = screenTop + screenHeight - this->height() - config->windowOffsetY;
-                    this->move(topLeftX, topLeftY);
+                QList<QScreen*> screens = QGuiApplication::screens();
+                if( screens.size() == 1 )
+                {
+                    screen = screens.at(0)->availableGeometry();
                 }
+                else
+                {
+                    for (int i = 0; i < screens.size(); ++i) {
+                        QRect availableGeometry = screens.at(i)->availableGeometry();
+                        if( ! ( availableGeometry.contains(cursorGlobalPos) ) )
+                        {
+                            screen = availableGeometry;
+                        }
+                    }
+                }
+
+                int screenHeight = screen.height();
+                int screenTop = screen.top();
+
+                int topLeftX = getXPos( screen.left() + config->windowOffsetX );
+                int topLeftY = screenTop + screenHeight - this->height() - config->windowOffsetY;
+                this->move(topLeftX, topLeftY);
             }
             else
             {
@@ -464,8 +486,6 @@ void MenuStop::keyPressEvent(QKeyEvent *event) {
         QWidget *focusedWidget = QApplication::focusWidget();
 
         if (focusedWidget) {
-            qDebug() << "Enter wciśnięty na widgecie:" << focusedWidget->objectName();
-
             HoverButton *button = qobject_cast<HoverButton*>(focusedWidget);
             if (button) {
                 button->click(); // Wywoła sygnał clicked() podpięty do tego przycisku

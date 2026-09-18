@@ -27,6 +27,7 @@ Config::Config(QString configPath) {
     menuColorBackground = settings.value("Settings/MenuColorBackground", "").toString();
     menuColorBorder = settings.value("Settings/MenuColorBorder", "").toString();
 
+    activatedByCtrlSpace = true;
 }
 
 

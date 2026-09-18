@@ -37,7 +37,6 @@ MenuStop::MenuStop(QWidget *parent)
     , subDirWindow( nullptr )
     , subDirId(-1)
     , iconThreadsNum(0)
-    , activatedByCtrlSpace(true)
     , ctrlSpaceRegistered(false)
 {
     QString configPath;
@@ -84,7 +83,7 @@ MenuStop::MenuStop(QWidget *parent)
 
     QTimer::singleShot(3000, this, [this]() {
         this->showMinimized();
-        this->activatedByCtrlSpace = false;
+        this->config->activatedByCtrlSpace = false;
     });
 
     connect(qApp, &QApplication::focusChanged, this, [this](QWidget *old, QWidget *now) {
@@ -97,7 +96,7 @@ MenuStop::MenuStop(QWidget *parent)
                     subDirId=-1;
                 }
                 this->showMinimized();
-                this->activatedByCtrlSpace = false;
+                this->config->activatedByCtrlSpace = false;
             }
         });
     });
@@ -123,7 +122,7 @@ bool MenuStop::nativeEvent(const QByteArray &eventType, void *message, qintptr *
 
                 if( this->isMinimized() || this->isHidden() )
                 {
-                    this->activatedByCtrlSpace = true;
+                    this->config->activatedByCtrlSpace = true;
 
                     HWND hwnd = (HWND)this->winId();
 
@@ -144,7 +143,7 @@ bool MenuStop::nativeEvent(const QByteArray &eventType, void *message, qintptr *
                 else
                 {
                     this->showMinimized();
-                    this->activatedByCtrlSpace = false;
+                    this->config->activatedByCtrlSpace = false;
                 }
                 return true; // Zwracamy true, aby skrót nie szedł dalej do systemu
             }
@@ -276,7 +275,7 @@ void MenuStop::showVersionDialog() {
     delete dialog; // Safe layout cleanup immediately after closure
 
     this->showMinimized();
-    this->activatedByCtrlSpace = false;
+    this->config->activatedByCtrlSpace = false;
 }
 
 
@@ -357,12 +356,12 @@ void MenuStop::changeEvent(QEvent *event)
 
             if (!subDirWindow && !isOurPopup) {
                 this->showMinimized();
-                this->activatedByCtrlSpace = false;
+                this->config->activatedByCtrlSpace = false;
             }
         }
         else
         {
-            if( activatedByCtrlSpace )
+            if( config->activatedByCtrlSpace )
             {
                 QPoint cursorGlobalPos = QCursor::pos();
                 QRect screen;
@@ -430,7 +429,7 @@ void MenuStop::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_Escape)
     {
         this->showMinimized();
-        this->activatedByCtrlSpace = false;
+        this->config->activatedByCtrlSpace = false;
     }
     else if( event->key() == Qt::Key_Q)
     {
@@ -469,7 +468,7 @@ void MenuStop::keyPressEvent(QKeyEvent *event) {
 
             HoverButton *button = qobject_cast<HoverButton*>(focusedWidget);
             if (button) {
-                button->enterEvent( nullptr ); // Wywoła sygnał clicked() podpięty do tego przycisku
+                button->enterEvent( nullptr ); // Wywoła sygnał mouse entered podpięty do tego przycisku
                 event->accept();
                 return;
             }

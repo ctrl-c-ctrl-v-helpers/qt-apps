@@ -22,6 +22,7 @@ void createClickedLambda( HoverButton *btn, T *that, int i )
         for (QWidget *widget : widgets) {
             if (widget->isWindow()) { widget->showMinimized(); }
         }
+        that->config->activatedByCtrlSpace = false;
     });
 
 }

@@ -58,7 +58,7 @@ public:
 
     const int ID_CTRL_SPACE = 1002;
 
-    bool activatedByCtrlSpace;
+
 
     bool ctrlSpaceRegistered;
 

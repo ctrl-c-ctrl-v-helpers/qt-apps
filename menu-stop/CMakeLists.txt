@@ -29,6 +29,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         subdirwindow.h subdirwindow.cpp
         versiondialog.h versiondialog.cpp
         config.h config.cpp
+        commonwindowlogic.h
 
     )
 # Define target properties for Android with Qt 6 as:

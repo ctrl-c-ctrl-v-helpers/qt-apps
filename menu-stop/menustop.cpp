@@ -11,7 +11,7 @@
 #include <QDirIterator>
 #include <QGridLayout>
 #include <QPushButton>
-#include <QDesktopServices>
+
 #include <QUrl>
 #include <algorithm>
 #include <QKeyEvent>
@@ -28,6 +28,7 @@
 #include <QFuture>
 #include <QtConcurrent>
 #include <QMessageBox>
+#include "commonwindowlogic.h"
 
 
 MenuStop::MenuStop(QWidget *parent)
@@ -205,35 +206,9 @@ void MenuStop::populateGrid() {
                                    "QPushButton:hover { background-color: %3; color: %4; }")
                                .arg(config->menuColorBorder, config->menuColorText, config->menuColorHover, config->menuColorTextHover));
 
-        QObject::connect(btn, &QPushButton::clicked, [this, i]() {
-            QDesktopServices::openUrl(QUrl::fromLocalFile(shortcuts[i].path));
-            this->showMinimized();
-            this->activatedByCtrlSpace = false;
-        });
-        QObject::connect(btn, &HoverButton::mouseEntered, this, [this, i, btn]() {
-            if( subDirId != i )
-            {
-                if( subDirWindow )
-                {
-                    subDirWindow->closeUpwards();
-                    subDirWindow=nullptr;
-                    subDirId=-1;
-                }
-                if( shortcuts[i].subDir )
-                {
-                    QPoint pos = btn->mapToGlobal(QPoint(btn->width(), btn->height()));
-                    subDirWindow = new SubDirWindow(*shortcuts[i].subDir, config, pos, this);
-                    subDirWindow->setAttribute(Qt::WA_DeleteOnClose);
-                    subDirWindow->populateGrid();
+        createClickedLambda( btn, this, i );
 
-                    subDirWindow->show();
-                    subDirWindow->raise();
-                    subDirWindow->activateWindow();
-
-                    subDirId=i;
-                }
-            }
-        });
+        createMouseEnteredLambda( btn, this, i );
 
         gridLayout->addWidget(btn, i, 1);
     }
@@ -365,12 +340,8 @@ void MenuStop::checkFilesForShortcuts(const QString &path, QVector<Lnk> &shortcu
 }
 
 void MenuStop::requestCloseChild()
-{
-    if (subDirWindow) {
-        subDirWindow->closeUpwards();
-        subDirWindow = nullptr;
-        subDirId = -1;
-    }
+{ 
+    doRequestCloseChild(this);
 }
 
 
@@ -380,12 +351,8 @@ void MenuStop::changeEvent(QEvent *event)
     if (event->type() == QEvent::ActivationChange) {
         if (!this->isActiveWindow()) {
 
-
-            // CHECK THE FOCUS OWNER: Find out which window took the focus
             QWidget *activeWin = QApplication::activeWindow();
 
-            // Prevent minimizing if a subDirWindow is open, OR if the focus
-            // belongs to our new modal version popup dialog box
             bool isOurPopup = (activeWin && activeWin->parent() == this && activeWin->inherits("QDialog"));
 
             if (!subDirWindow && !isOurPopup) {

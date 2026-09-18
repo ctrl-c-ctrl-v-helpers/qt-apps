@@ -39,7 +39,7 @@ protected:
 private slots:
     void showVersionDialog();
 
-private:
+public:
     Ui::MenuStop *ui;
 
     QVector<Lnk> shortcuts;

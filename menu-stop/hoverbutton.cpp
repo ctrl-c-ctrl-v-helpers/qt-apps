@@ -21,6 +21,11 @@ void HoverButton::leaveEvent(QEvent *event)
     QPushButton::leaveEvent(event);
 }
 
+void HoverButton::keyRightPressed()
+{
+    emit mouseEntered();
+}
+
 void HoverButton::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Left) {

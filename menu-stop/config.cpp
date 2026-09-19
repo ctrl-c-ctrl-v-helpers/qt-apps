@@ -22,12 +22,25 @@ Config::Config(QString configPath) {
 
     menuColorText = settings.value("Settings/MenuColorText", "").toString();
     menuColorTextHover = settings.value("Settings/MenuColorTextHover", "").toString();
-    menuColorHover = settings.value("Settings/MenuColorHover", "").toString();
+    menuColorBackgroundHover = settings.value("Settings/MenuColorBackgroundHover", "").toString();
 
     menuColorBackground = settings.value("Settings/MenuColorBackground", "").toString();
     menuColorBorder = settings.value("Settings/MenuColorBorder", "").toString();
 
+    menuColorTextHoverKbd = settings.value("Settings/MenuColorTextHoverKbd", "").toString();
+    menuColorBackgroundHoverKbd = settings.value("Settings/MenuColorBackgroundHoverKbd", "").toString();
+
+
     activatedByCtrlSpace = true;
+
+    buttonStyleNormal = QString("QPushButton { text-align: left; padding: 10px; border: 1px solid %1; background: transparent; color: %2}"
+                                "QPushButton:hover { background-color: %3; color: %4; }")
+                            .arg(menuColorBorder, menuColorText, menuColorBackgroundHover, menuColorTextHover);
+
+    buttonStyleKbdHover = QString("QPushButton { text-align: left; padding: 10px; border: 1px solid %1; background-color: %5; color: %2}"
+                                "QPushButton:hover { background-color: %3; color: %4; }")
+                            .arg(menuColorBorder, menuColorTextHoverKbd, menuColorBackgroundHover, menuColorTextHover, menuColorBackgroundHoverKbd);
+
 }
 
 

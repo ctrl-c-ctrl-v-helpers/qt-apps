@@ -432,10 +432,6 @@ void MenuStop::keyPressEvent(QKeyEvent *event) {
         {
             this->minimizeApp();
         }
-        else if( event->key() == Qt::Key_Q)
-        {
-            qApp->quit();
-        }
         else if( event->key() == Qt::Key_F5)
         {
             HWND hwnd = (HWND)this->winId();
@@ -447,19 +443,6 @@ void MenuStop::keyPressEvent(QKeyEvent *event) {
             args.removeFirst();
             QProcess::startDetached(appPath, args, shortcutPwd);
             QCoreApplication::quit();
-        }
-        else if(event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
-        {
-            QWidget *focusedWidget = QApplication::focusWidget();
-
-            if (focusedWidget) {
-                HoverButton *button = qobject_cast<HoverButton*>(focusedWidget);
-                if (button) {
-                    button->click(); // Wywoła sygnał clicked() podpięty do tego przycisku
-                    event->accept();
-                    return;
-                }
-            }
         }
         else
         {

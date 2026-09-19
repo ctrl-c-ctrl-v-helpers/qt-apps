@@ -116,14 +116,6 @@ void SubDirWindow::keyPressEvent(QKeyEvent *event) {
             event->accept();
             return;
         }
-        if (event->key() == Qt::Key_Left)
-        {
-            this->close();
-        }
-        if (event->key() == Qt::Key_Q) {
-            qApp->quit(); // Natychmiastowe, bezpieczne wyjście z aplikacji
-            return;
-        }
 
         QDialog::keyPressEvent(event);
     }

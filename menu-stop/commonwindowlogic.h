@@ -142,6 +142,37 @@ bool processKeyPressEvent(QKeyEvent *event, T *that)
         event->accept();
         return true;
     }
+    else if( event->key() == Qt::Key_Down )
+    {
+        if( that->kbdHoverId != -1 )
+        {
+            HoverButton *btn = qobject_cast<HoverButton *>(that->gridLayout->itemAtPosition(
+                                                                               that->kbdHoverId, that->buttonsColumnId
+                                                                               )->widget());
+            btn->setStyleSheet( that->config->buttonStyleNormal );
+
+            if( that->kbdHoverId == that->gridLayout->rowCount()-1 )
+            {
+                that->kbdHoverId = 0;
+            }
+            else
+            {
+                ++that->kbdHoverId;
+            }
+        }
+        else
+        {
+            that->kbdHoverId = 0;
+        }
+
+        HoverButton *btn = qobject_cast<HoverButton *>(that->gridLayout->itemAtPosition(
+                                                                           that->kbdHoverId, that->buttonsColumnId
+                                                                           )->widget());
+        btn->setStyleSheet( that->config->buttonStyleKbdHover );
+
+        event->accept();
+        return true;
+    }
 
     return false;
 }

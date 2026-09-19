@@ -229,7 +229,7 @@ void MenuStop::runIconsThreads( QVector<Lnk> & shortcuts )
 
         ++iconThreadsNum;
 
-        QFutureWatcher<QImage> *watcher = new QFutureWatcher<QImage>(this);
+        QFutureWatcher<QImage> *watcher = new QFutureWatcher<QImage>(this); // NOLINT(clang-analyzer-cplusplus.NewDeleteLeaks)
 
         // 2. Connect the finished signal back to the main GUI thread
         connect(watcher, &QFutureWatcher<QImage>::finished, this, [this, watcher, &shortcuts, i]() {
@@ -335,8 +335,6 @@ void MenuStop::checkFilesForShortcuts(const QString &path, QVector<Lnk> &shortcu
         }
         shortcuts[i].name += "     ";
     }
-
-
 }
 
 void MenuStop::requestCloseChild()

@@ -460,20 +460,6 @@ void MenuStop::keyPressEvent(QKeyEvent *event) {
             }
         }
     }
-    else if(event->key() == Qt::Key_Right)
-    {
-        QWidget *focusedWidget = QApplication::focusWidget();
-
-        if (focusedWidget) {
-
-            HoverButton *button = qobject_cast<HoverButton*>(focusedWidget);
-            if (button) {
-                button->enterEvent( nullptr ); // Wywoła sygnał mouse entered podpięty do tego przycisku
-                event->accept();
-                return;
-            }
-        }
-    }
     else
     {
         QMainWindow::keyPressEvent(event);

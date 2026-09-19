@@ -26,7 +26,6 @@ signals:
     void mouseLeft();
 
 protected:
-    void keyPressEvent(QKeyEvent *event) override;
 
 };
 

@@ -38,6 +38,8 @@ MenuStop::MenuStop(QWidget *parent)
     , subDirId(-1)
     , iconThreadsNum(0)
     , ctrlSpaceRegistered(false)
+    , kbdHoverId(-1)
+    , buttonsColumnId( 1 )
 {
     QString configPath;
     QStringList args = QCoreApplication::arguments();
@@ -82,12 +84,12 @@ MenuStop::MenuStop(QWidget *parent)
     this->adjustSize();
 
     QTimer::singleShot(3000, this, [this]() {
-        this->showMinimized();
-        this->config->activatedByCtrlSpace = false;
+        this->minimizeApp();
     });
 
     connect(qApp, &QApplication::focusChanged, this, [this](QWidget *old, QWidget *now) {
         QTimer::singleShot(1000, this, [this]() {
+            qDebug() << 1000;
             if (QApplication::activeWindow() == nullptr) {
                 if( subDirWindow )
                 {
@@ -95,8 +97,7 @@ MenuStop::MenuStop(QWidget *parent)
                     subDirWindow=nullptr;
                     subDirId=-1;
                 }
-                this->showMinimized();
-                this->config->activatedByCtrlSpace = false;
+                this->minimizeApp();
             }
         });
     });
@@ -139,11 +140,17 @@ bool MenuStop::nativeEvent(const QByteArray &eventType, void *message, qintptr *
 
                     // 3. Poinformuj Qt o zmianie stanu, aby zaktualizowało focus komponentów wewnątrz okna
                     this->raise();
+
+                    kbdHoverId = gridLayout->rowCount()-1;
+                    HoverButton *btn = qobject_cast<HoverButton *>(gridLayout->itemAtPosition(
+                                                                                 kbdHoverId, buttonsColumnId
+                                                                                 )->widget());
+                    btn->setStyleSheet( config->buttonStyleKbdHover );
+
                 }
                 else
                 {
-                    this->showMinimized();
-                    this->config->activatedByCtrlSpace = false;
+                    this->minimizeApp();
                 }
                 return true; // Zwracamy true, aby skrót nie szedł dalej do systemu
             }
@@ -151,6 +158,14 @@ bool MenuStop::nativeEvent(const QByteArray &eventType, void *message, qintptr *
     }
 
     return QMainWindow::nativeEvent(eventType, message, result);
+}
+
+
+void MenuStop::minimizeApp()
+{
+    unHoverKbd( this );
+    this->config->activatedByCtrlSpace = false;
+    this->showMinimized();
 }
 
 MenuStop::~MenuStop()
@@ -194,25 +209,9 @@ void MenuStop::populateGrid() {
 
     for( int i=0; i<shortcuts.size(); ++i )
     {
-        HoverButton *btn = new HoverButton( shortcuts[i].name );
-        btn->setIconSize(QSize(config->iconSize, config->iconSize));
-        btn->setFocusPolicy(Qt::StrongFocus);
-        btn->setStyleSheet( config->buttonStyleNormal );
-        btn->setStyleSheet("text-align: left; padding: 10px;");
-        if( !shortcuts[i].icon.isNull() )
-        {
-            btn->setIcon( shortcuts[i].icon );
-        }
-        else
-        {
-            btn->setIcon( style()->standardIcon(QStyle::SP_FileDialogContentsView));
-        }
+        HoverButton *btn = createHoverButton( this, i );
 
-
-        createClickedLambda( btn, this, i );
-        createMouseEnteredLambda( btn, this, i );
-
-        gridLayout->addWidget(btn, i, 1);
+        gridLayout->addWidget(btn, i, buttonsColumnId);
     }
 
     mainLayout->addWidget(banner);
@@ -277,8 +276,7 @@ void MenuStop::showVersionDialog() {
     dialog->exec();
     delete dialog; // Safe layout cleanup immediately after closure
 
-    this->showMinimized();
-    this->config->activatedByCtrlSpace = false;
+    this->minimizeApp();
 }
 
 
@@ -358,8 +356,7 @@ void MenuStop::changeEvent(QEvent *event)
             bool isOurPopup = (activeWin && activeWin->parent() == this && activeWin->inherits("QDialog"));
 
             if (!subDirWindow && !isOurPopup) {
-                this->showMinimized();
-                this->config->activatedByCtrlSpace = false;
+                this->minimizeApp();
             }
         }
         else
@@ -429,43 +426,45 @@ int MenuStop::getXPos( int x ) {
 }
 
 void MenuStop::keyPressEvent(QKeyEvent *event) {
-    if (event->key() == Qt::Key_Escape)
+    if( ! processKeyPressEvent( event, this ))
     {
-        this->showMinimized();
-        this->config->activatedByCtrlSpace = false;
-    }
-    else if( event->key() == Qt::Key_Q)
-    {
-        qApp->quit();
-    }
-    else if( event->key() == Qt::Key_F5)
-    {
-        HWND hwnd = (HWND)this->winId();
-        UnregisterHotKey(hwnd, ID_CTRL_SPACE);
+        if (event->key() == Qt::Key_Escape)
+        {
+            this->minimizeApp();
+        }
+        else if( event->key() == Qt::Key_Q)
+        {
+            qApp->quit();
+        }
+        else if( event->key() == Qt::Key_F5)
+        {
+            HWND hwnd = (HWND)this->winId();
+            UnregisterHotKey(hwnd, ID_CTRL_SPACE);
 
-        QString shortcutPwd = QDir::currentPath();
-        QString appPath = QCoreApplication::applicationFilePath();
-        QStringList args = QCoreApplication::arguments();
-        args.removeFirst();
-        QProcess::startDetached(appPath, args, shortcutPwd);
-        QCoreApplication::quit();
-    }
-    else if(event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
-    {
-        QWidget *focusedWidget = QApplication::focusWidget();
+            QString shortcutPwd = QDir::currentPath();
+            QString appPath = QCoreApplication::applicationFilePath();
+            QStringList args = QCoreApplication::arguments();
+            args.removeFirst();
+            QProcess::startDetached(appPath, args, shortcutPwd);
+            QCoreApplication::quit();
+        }
+        else if(event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
+        {
+            QWidget *focusedWidget = QApplication::focusWidget();
 
-        if (focusedWidget) {
-            HoverButton *button = qobject_cast<HoverButton*>(focusedWidget);
-            if (button) {
-                button->click(); // Wywoła sygnał clicked() podpięty do tego przycisku
-                event->accept();
-                return;
+            if (focusedWidget) {
+                HoverButton *button = qobject_cast<HoverButton*>(focusedWidget);
+                if (button) {
+                    button->click(); // Wywoła sygnał clicked() podpięty do tego przycisku
+                    event->accept();
+                    return;
+                }
             }
         }
-    }
-    else
-    {
-        QMainWindow::keyPressEvent(event);
+        else
+        {
+            QMainWindow::keyPressEvent(event);
+        }
     }
 }
 

@@ -4,6 +4,7 @@
 #include <QDesktopServices>
 #include "hoverbutton.h"
 #include "subdirwindow.h"
+#include "menustop.h"
 #include "QDebug"
 #include "QApplication"
 #include <QStyle>
@@ -172,7 +173,8 @@ bool processKeyPressEvent(QKeyEvent *event, T *that)
 
         event->accept();
         return true;
-    } else if( event->key() == Qt::Key_Right ) {
+    }
+    else if( event->key() == Qt::Key_Right ) {
         if( that->kbdHoverId != -1 )
         {
             HoverButton *btn = qobject_cast<HoverButton *>(that->gridLayout->itemAtPosition(
@@ -180,6 +182,35 @@ bool processKeyPressEvent(QKeyEvent *event, T *that)
                                                                                )->widget());
             btn->keyRightPressed();
         }
+    }
+    else if( event->key() == Qt::Key_Left )
+    {
+        QWidget *parentWidget = that->parentWidget();
+
+        SubDirWindow *parentSubDir = qobject_cast<SubDirWindow*>(parentWidget);
+        if (parentSubDir) {
+            parentSubDir->requestCloseChild(); // Czyści i zamyka to okno z poziomu wyższego podmenu
+        }
+
+        MenuStop *mainMenu = qobject_cast<MenuStop*>(parentWidget);
+        if (mainMenu) {
+            mainMenu->requestCloseChild(); // Czyści i zamyka to okno z poziomu menu głównego
+        }
+
+        event->accept();
+        return true;
+    }
+    else if(event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
+    {
+        if( that->kbdHoverId != -1 )
+        {
+            HoverButton *btn = qobject_cast<HoverButton *>(that->gridLayout->itemAtPosition(
+                                                                               that->kbdHoverId, that->buttonsColumnId
+                                                                               )->widget());
+            btn->click();
+        }
+        event->accept();
+        return true;
     }
 
     return false;

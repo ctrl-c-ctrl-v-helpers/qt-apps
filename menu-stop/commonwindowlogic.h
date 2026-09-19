@@ -206,6 +206,11 @@ bool processKeyPressEvent(QKeyEvent *event, T *that)
         event->accept();
         return true;
     }
+    else if (event->key() == Qt::Key_Q)
+    {
+        qApp->quit(); // Natychmiastowe, bezpieczne wyjście z aplikacji
+        return true;
+    }
 
     return false;
 }

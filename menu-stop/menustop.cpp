@@ -195,18 +195,21 @@ void MenuStop::populateGrid() {
     for( int i=0; i<shortcuts.size(); ++i )
     {
         HoverButton *btn = new HoverButton( shortcuts[i].name );
-
-        btn->setIcon( style()->standardIcon(QStyle::SP_FileDialogContentsView));
         btn->setIconSize(QSize(config->iconSize, config->iconSize));
-        btn->setStyleSheet("text-align: left; padding: 10px;");
         btn->setFocusPolicy(Qt::StrongFocus);
+        btn->setStyleSheet( config->buttonStyleNormal );
+        btn->setStyleSheet("text-align: left; padding: 10px;");
+        if( !shortcuts[i].icon.isNull() )
+        {
+            btn->setIcon( shortcuts[i].icon );
+        }
+        else
+        {
+            btn->setIcon( style()->standardIcon(QStyle::SP_FileDialogContentsView));
+        }
 
-        btn->setStyleSheet(QString("QPushButton { text-align: left; padding: 10px; border: 1px solid %1; background: transparent; color: %2}"
-                                   "QPushButton:hover { background-color: %3; color: %4; }")
-                               .arg(config->menuColorBorder, config->menuColorText, config->menuColorHover, config->menuColorTextHover));
 
         createClickedLambda( btn, this, i );
-
         createMouseEnteredLambda( btn, this, i );
 
         gridLayout->addWidget(btn, i, 1);

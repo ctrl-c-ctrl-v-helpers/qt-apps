@@ -18,11 +18,17 @@ public:
     int iconSize;
     QString menuColorText;
     QString menuColorTextHover;
-    QString menuColorHover;
+    QString menuColorBackgroundHover;
     QString menuColorBackground;
     QString menuColorBorder;
 
+    QString menuColorTextHoverKbd;
+    QString menuColorBackgroundHoverKbd;
+
     bool activatedByCtrlSpace;
+
+    QString buttonStyleNormal;
+    QString buttonStyleKbdHover;
 };
 
 #endif // CONFIG_H

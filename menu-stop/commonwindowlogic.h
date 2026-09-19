@@ -66,8 +66,7 @@ HoverButton *createHoverButton( T *that, int i )
 {
     HoverButton *btn = new HoverButton( that->shortcuts[i].name );
     btn->setIconSize(QSize(that->config->iconSize, that->config->iconSize));
-   // btn->setFocusPolicy(Qt::NoFocus);
-    btn->setFocusPolicy(Qt::StrongFocus);
+    btn->setFocusPolicy(Qt::NoFocus);
     btn->setStyleSheet( that->config->buttonStyleNormal );
 
     if( !that->shortcuts[i].icon.isNull() )

@@ -87,22 +87,22 @@ MenuStop::MenuStop(QWidget *parent)
         this->minimizeApp();
     });
 
-    connect(qApp, &QApplication::focusChanged, this, [this](QWidget *old, QWidget *now) {
-        QTimer::singleShot(1000, this, [this]() {
-            qDebug() << 1000;
-            if (QApplication::activeWindow() == nullptr) {
-                if( subDirWindow )
-                {
-                    subDirWindow->closeUpwards();
-                    subDirWindow=nullptr;
-                    subDirId=-1;
+    connect(qApp, &QGuiApplication::applicationStateChanged, this, [this](Qt::ApplicationState state) {
+        // Stan Qt::ApplicationInactive oznacza, że użytkownik kliknął poza aplikację
+        if (state == Qt::ApplicationInactive) {
+            QTimer::singleShot(1000, this, [this]() {
+                // Podwójne sprawdzenie dla bezpieczeństwa
+                if (QApplication::activeWindow() == nullptr) {
+                    if (subDirWindow) {
+                        subDirWindow->closeUpwards();
+                        subDirWindow = nullptr;
+                        subDirId = -1;
+                    }
+                    this->minimizeApp();
                 }
-                this->minimizeApp();
-            }
-        });
+            });
+        }
     });
-
-
 
 }
 

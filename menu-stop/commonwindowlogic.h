@@ -15,12 +15,6 @@
 template <typename T>
 void createClickedLambda( HoverButton *btn, T *that, int i )
 {
-/*        QObject::connect(btn, &QPushButton::clicked, [that, i]() {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(that->shortcuts[i].path));
-        that->showMinimized();
-        that->activatedByCtrlSpace = false;
-    });
-*/
     QObject::connect(btn, &QPushButton::clicked, [that, i]() {
         QDesktopServices::openUrl(QUrl::fromLocalFile(that->shortcuts[i].path));
         const QWidgetList widgets = QApplication::topLevelWidgets();

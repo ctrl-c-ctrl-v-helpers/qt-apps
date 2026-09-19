@@ -30,6 +30,8 @@ public:
 
     void requestCloseChild();
 
+    void minimizeApp();
+
 protected:
     void changeEvent(QEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
@@ -58,9 +60,11 @@ public:
 
     const int ID_CTRL_SPACE = 1002;
 
-
+    int kbdHoverId;
 
     bool ctrlSpaceRegistered;
+
+    int buttonsColumnId;
 
 };
 #endif // MENUSTOP_H

@@ -32,6 +32,9 @@ public:
     Config *config;
     QPoint leftBottomCorner;
     int subDirId;
+    int kbdHoverId;
+    int buttonsColumnId;
+    QGridLayout *gridLayout;
 };
 
 #endif // MYFRAMELESSWINDOW_H

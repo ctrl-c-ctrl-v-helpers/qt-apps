@@ -16,6 +16,8 @@ SubDirWindow::SubDirWindow(QVector<Lnk> & shortc, Config *configuration, QPoint 
     , config(configuration)
     , leftBottomCorner( leftBottom )
     , subDirId(-1)
+    , kbdHoverId(-1)
+    , buttonsColumnId( 0 )
 {
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -32,29 +34,14 @@ void SubDirWindow::populateGrid() {
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
-    QGridLayout *gridLayout = new QGridLayout();
+    gridLayout = new QGridLayout();
     gridLayout->setSpacing(0);
     gridLayout->setContentsMargins(5, 5, 5, 5);
 
     for( int i=0; i<shortcuts.size(); ++i ) {
-        HoverButton *btn = new HoverButton( shortcuts[i].name );
-        btn->setIconSize(QSize(config->iconSize, config->iconSize));
-        btn->setFocusPolicy(Qt::StrongFocus);
-        btn->setStyleSheet( config->buttonStyleNormal );
-        if( !shortcuts[i].icon.isNull() )
-        {
-            btn->setIcon( shortcuts[i].icon );
-        }
-        else
-        {
-            btn->setIcon( style()->standardIcon(QStyle::SP_FileDialogContentsView));
-        }
+        HoverButton *btn = createHoverButton( this, i );
 
-
-        createClickedLambda( btn, this, i );
-        createMouseEnteredLambda( btn, this, i );
-
-        gridLayout->addWidget(btn, i, 0);
+        gridLayout->addWidget(btn, i, buttonsColumnId);
     }
     mainLayout->addLayout(gridLayout);
 

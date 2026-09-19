@@ -6,6 +6,10 @@
 #include "subdirwindow.h"
 #include "QDebug"
 #include "QApplication"
+#include <QStyle>
+
+
+
 
 template <typename T>
 void createClickedLambda( HoverButton *btn, T *that, int i )
@@ -58,6 +62,30 @@ void createMouseEnteredLambda( HoverButton *btn, T *that, int i )
 }
 
 template <typename T>
+HoverButton *createHoverButton( T *that, int i )
+{
+    HoverButton *btn = new HoverButton( that->shortcuts[i].name );
+    btn->setIconSize(QSize(that->config->iconSize, that->config->iconSize));
+   // btn->setFocusPolicy(Qt::NoFocus);
+    btn->setFocusPolicy(Qt::StrongFocus);
+    btn->setStyleSheet( that->config->buttonStyleNormal );
+
+    if( !that->shortcuts[i].icon.isNull() )
+    {
+        btn->setIcon( that->shortcuts[i].icon );
+    }
+    else
+    {
+        btn->setIcon( that->style()->standardIcon(QStyle::SP_FileDialogContentsView));
+    }
+
+    createClickedLambda( btn, that, i );
+    createMouseEnteredLambda( btn, that, i );
+
+    return btn;
+}
+
+template <typename T>
 void doRequestCloseChild(T *that)
 {
     if (that->subDirWindow) {
@@ -65,6 +93,58 @@ void doRequestCloseChild(T *that)
         that->subDirWindow = nullptr;
         that->subDirId = -1;
     }
+}
+
+template <typename T>
+void unHoverKbd(T *that)
+{
+    if( that->kbdHoverId != -1 )
+    {
+        HoverButton *btn = qobject_cast<HoverButton *>(that->gridLayout->itemAtPosition(
+                                                                           that->kbdHoverId, that->buttonsColumnId
+                                                                           )->widget());
+        btn->setStyleSheet( that->config->buttonStyleNormal );
+        that->kbdHoverId = -1;
+    }
+}
+
+
+template <typename T>
+bool processKeyPressEvent(QKeyEvent *event, T *that)
+{
+    if( event->key() == Qt::Key_Up )
+    {
+        if( that->kbdHoverId != -1 )
+        {
+            HoverButton *btn = qobject_cast<HoverButton *>(that->gridLayout->itemAtPosition(
+                                                   that->kbdHoverId, that->buttonsColumnId
+                                                                               )->widget());
+            btn->setStyleSheet( that->config->buttonStyleNormal );
+
+            if( that->kbdHoverId == 0 )
+            {
+                that->kbdHoverId = that->gridLayout->rowCount()-1;
+            }
+            else
+            {
+                --that->kbdHoverId;
+            }
+        }
+        else
+        {
+            that->kbdHoverId = that->gridLayout->rowCount()-1;
+        }
+
+        HoverButton *btn = qobject_cast<HoverButton *>(that->gridLayout->itemAtPosition(
+                                                                           that->kbdHoverId, that->buttonsColumnId
+                                                                           )->widget());
+        btn->setStyleSheet( that->config->buttonStyleKbdHover );
+
+        event->accept();
+        return true;
+    }
+
+    return false;
 }
 
 

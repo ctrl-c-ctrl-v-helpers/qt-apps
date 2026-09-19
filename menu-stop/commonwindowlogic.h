@@ -172,6 +172,14 @@ bool processKeyPressEvent(QKeyEvent *event, T *that)
 
         event->accept();
         return true;
+    } else if( event->key() == Qt::Key_Right ) {
+        if( that->kbdHoverId != -1 )
+        {
+            HoverButton *btn = qobject_cast<HoverButton *>(that->gridLayout->itemAtPosition(
+                                                                               that->kbdHoverId, that->buttonsColumnId
+                                                                               )->widget());
+            btn->keyRightPressed();
+        }
     }
 
     return false;

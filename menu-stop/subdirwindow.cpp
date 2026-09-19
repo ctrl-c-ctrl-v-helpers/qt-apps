@@ -41,6 +41,12 @@ void SubDirWindow::populateGrid() {
     for( int i=0; i<shortcuts.size(); ++i ) {
         HoverButton *btn = createHoverButton( this, i );
 
+        if( config->activatedByCtrlSpace && i == 0)
+        {
+            btn->setStyleSheet(this->config->buttonStyleKbdHover);
+            this->kbdHoverId = 0;
+        }
+
         gridLayout->addWidget(btn, i, buttonsColumnId);
     }
     mainLayout->addLayout(gridLayout);
@@ -99,23 +105,26 @@ void SubDirWindow::closeUpwards()
 }
 
 void SubDirWindow::keyPressEvent(QKeyEvent *event) {
-    if (event->key() == Qt::Key_Escape)
+    if( ! processKeyPressEvent( event, this ))
     {
-        const QWidgetList widgets = QApplication::topLevelWidgets();
-        for (QWidget *widget : widgets) {
-            if (widget->isWindow()) { widget->showMinimized(); }
+        if (event->key() == Qt::Key_Escape)
+        {
+            const QWidgetList widgets = QApplication::topLevelWidgets();
+            for (QWidget *widget : widgets) {
+                if (widget->isWindow()) { widget->showMinimized(); }
+            }
+            event->accept();
+            return;
         }
-        event->accept();
-        return;
-    }
-    if (event->key() == Qt::Key_Left)
-    {
-        this->close();
-    }
-    if (event->key() == Qt::Key_Q) {
-        qApp->quit(); // Natychmiastowe, bezpieczne wyjście z aplikacji
-        return;
-    }
+        if (event->key() == Qt::Key_Left)
+        {
+            this->close();
+        }
+        if (event->key() == Qt::Key_Q) {
+            qApp->quit(); // Natychmiastowe, bezpieczne wyjście z aplikacji
+            return;
+        }
 
-    QDialog::keyPressEvent(event);
+        QDialog::keyPressEvent(event);
+    }
 }

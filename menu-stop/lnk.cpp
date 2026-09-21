@@ -4,6 +4,7 @@
 
 #include <QFileIconProvider>
 #include <QDebug>
+#include <QSettings>
 
 Lnk::Lnk( QString shortcutPath, int iconSz )
     : path(shortcutPath)
@@ -13,10 +14,22 @@ Lnk::Lnk( QString shortcutPath, int iconSz )
     QFileInfo fileInfo(shortcutPath);
     name=fileInfo.completeBaseName();
 
-    QFileIconProvider provider;
-    QIcon tempIcon = provider.icon(fileInfo);
-    QPixmap rawPixmap = tempIcon.pixmap(QSize(iconSize, iconSize));
-    icon = QPixmap::fromImage(rawPixmap.toImage());
+    if( fileInfo.absoluteFilePath().endsWith(".txtlnk", Qt::CaseInsensitive) )
+    {
+        QSettings fileSettings(shortcutPath, QSettings::IniFormat);
+
+        QString targetPath = fileSettings.value("TextShortcut/TargetPath").toString();
+        QString iconPath   = fileSettings.value("TextShortcut/PngIconPath").toString();
+        icon = QPixmap( iconPath ).scaled(QSize(iconSize, iconSize));
+        path = targetPath;
+    }
+    else
+    {
+        QFileIconProvider provider;
+        QIcon tempIcon = provider.icon(fileInfo);
+        QPixmap rawPixmap = tempIcon.pixmap(QSize(iconSize, iconSize));
+        icon = QPixmap::fromImage(rawPixmap.toImage());
+    }
 }
 
 void Lnk::reLink( QString rePath )

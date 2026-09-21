@@ -233,7 +233,7 @@ void MenuStop::checkFilesForShortcuts(const QString &path, QVector<Lnk> &shortcu
         it.next();
         QFileInfo fileInfo = it.fileInfo(); // pobiera info bezpośrednio
         if (
-            ( fileInfo.isShortcut() || fileInfo.isDir() )
+            ( fileInfo.isShortcut() || fileInfo.isDir() || fileInfo.absoluteFilePath().endsWith(".txtlnk", Qt::CaseInsensitive))
             and
             ( not fileInfo.absoluteFilePath().endsWith("SELF-LINK.lnk", Qt::CaseInsensitive) )
             )

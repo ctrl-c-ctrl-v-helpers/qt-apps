@@ -9,7 +9,7 @@
 #include "commonwindowlogic.h"
 
 
-SubDirWindow::SubDirWindow(QVector<Lnk> & shortc, Config *configuration, QPoint leftBottom, QWidget *parent)
+SubDirWindow::SubDirWindow(QVector<Lnk> & shortc, Config *configuration, QPoint leftBottom, bool reversedExpand, QWidget *parent)
     : QDialog(parent)
     , subDirWindow(nullptr)
     , shortcuts(shortc)
@@ -18,6 +18,7 @@ SubDirWindow::SubDirWindow(QVector<Lnk> & shortc, Config *configuration, QPoint 
     , subDirId(-1)
     , kbdHoverId(-1)
     , buttonsColumnId( 0 )
+    , reversedExpansion( reversedExpand )
 {
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -41,10 +42,10 @@ void SubDirWindow::populateGrid() {
     for( int i=0; i<shortcuts.size(); ++i ) {
         HoverButton *btn = createHoverButton( this, i );
 
-        if( config->activatedByCtrlSpace && i == 0)
+        if( config->activatedByCtrlSpace && i == shortcuts.size()-1 )
         {
             btn->setStyleSheet(this->config->buttonStyleKbdHover);
-            this->kbdHoverId = 0;
+            this->kbdHoverId = shortcuts.size()-1;
         }
 
         gridLayout->addWidget(btn, i, buttonsColumnId);
@@ -65,6 +66,42 @@ void SubDirWindow::populateGrid() {
         int screenTop = currentScreen->availableGeometry().top();
         if( y < screenTop ) {
             y = screenTop;
+        }
+
+        int screenRight = currentScreen->availableGeometry().right();
+        int parentWidth = 0;
+
+        QWidget *parentWidget = this->parentWidget();
+
+        SubDirWindow *parentSubDir = qobject_cast<SubDirWindow*>(parentWidget);
+        if (parentSubDir) {
+            parentWidth = parentSubDir->width();
+        }
+
+        MenuStop *mainMenu = qobject_cast<MenuStop*>(parentWidget);
+        if (mainMenu) {
+            parentWidth = mainMenu->width();
+        }
+
+        if( reversedExpansion == false )
+        {
+            if( x + this->width() > screenRight )
+            {
+                reversedExpansion = true;
+
+                x = x - this->width() - parentWidth;
+            }
+        }
+        else
+        {
+            if( x - this->width() - parentWidth < 0 )
+            {
+                reversedExpansion = false;
+            }
+            else
+            {
+                x = x - this->width() - parentWidth;
+            }
         }
     }
 

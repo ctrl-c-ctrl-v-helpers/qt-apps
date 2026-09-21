@@ -38,6 +38,7 @@ MenuStop::MenuStop(QWidget *parent)
     , ctrlSpaceRegistered(false)
     , kbdHoverId(-1)
     , buttonsColumnId( 1 )
+    , reversedExpansion( false )
 {
     QString configPath;
     QStringList args = QCoreApplication::arguments();

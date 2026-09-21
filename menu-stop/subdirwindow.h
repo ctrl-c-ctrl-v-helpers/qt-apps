@@ -15,7 +15,7 @@ class SubDirWindow : public QDialog
     Q_OBJECT
 
 public:
-    explicit SubDirWindow(QVector<Lnk> & shortc, Config * configuration, QPoint leftBottom, QWidget *parent = nullptr);
+    explicit SubDirWindow(QVector<Lnk> & shortc, Config * configuration, QPoint leftBottom, bool reversedExpand, QWidget *parent = nullptr);
     void populateGrid();
     ~SubDirWindow();
     void closeUpwards();
@@ -35,6 +35,7 @@ public:
     int kbdHoverId;
     int buttonsColumnId;
     QGridLayout *gridLayout;
+    bool reversedExpansion;
 };
 
 #endif // MYFRAMELESSWINDOW_H

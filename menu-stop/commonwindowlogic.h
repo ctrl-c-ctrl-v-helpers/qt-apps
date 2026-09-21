@@ -42,7 +42,7 @@ void createMouseEnteredLambda( HoverButton *btn, T *that, int i )
             if( that->shortcuts[i].subDir )
             {
                 QPoint pos = btn->mapToGlobal(QPoint(btn->width(), btn->height()));
-                that->subDirWindow = new SubDirWindow(*(that->shortcuts[i].subDir), that->config, pos, that);
+                that->subDirWindow = new SubDirWindow(*(that->shortcuts[i].subDir), that->config, pos, that->reversedExpansion, that);
                 that->subDirWindow->setAttribute(Qt::WA_DeleteOnClose);
                 that->subDirWindow->populateGrid();
 

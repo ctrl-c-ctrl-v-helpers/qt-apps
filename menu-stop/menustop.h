@@ -65,5 +65,7 @@ public:
 
     int buttonsColumnId;
 
+    bool reversedExpansion;
+
 };
 #endif // MENUSTOP_H

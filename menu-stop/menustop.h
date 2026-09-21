@@ -24,7 +24,6 @@ public:
     MenuStop(QWidget *parent = nullptr);
     ~MenuStop();
     void checkFilesForShortcuts(const QString &path, QVector<Lnk> & shortcuts);
-    void runIconsThreads( QVector<Lnk> & shortcuts );
     void populateGrid();
     int getXPos( int x );
 

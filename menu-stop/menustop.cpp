@@ -11,7 +11,7 @@
 #include <QDirIterator>
 #include <QGridLayout>
 #include <QPushButton>
-
+#include <QProcess>
 #include <QUrl>
 #include <algorithm>
 #include <QKeyEvent>
@@ -26,10 +26,8 @@
 #include <QStyle>
 #include <QFileIconProvider>
 #include <QFuture>
-#include <QtConcurrent>
 #include <QMessageBox>
 #include "commonwindowlogic.h"
-
 
 MenuStop::MenuStop(QWidget *parent)
     : QMainWindow(parent)
@@ -73,15 +71,16 @@ MenuStop::MenuStop(QWidget *parent)
     }
 
     populateGrid();
-    runIconsThreads( shortcuts );
 
     setWindowTitle(QString("\u200B"));
+    setWindowIcon(QIcon( config->iconPath ));
 
     this->setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
     this->setStyleSheet(QString("QMainWindow { border: 1px solid %1; background-color: %2}").arg(config->menuColorBorder, config->menuColorBackground));
 
     ui->centralwidget->layout()->setSizeConstraint(QLayout::SetFixedSize);
     this->adjustSize();
+
 
     QTimer::singleShot(3000, this, [this]() {
         this->minimizeApp();
@@ -218,59 +217,6 @@ void MenuStop::populateGrid() {
     mainLayout->addLayout(gridLayout);
 }
 
-void MenuStop::runIconsThreads( QVector<Lnk> & shortcuts )
-{
-    for( int i=0; i<shortcuts.size(); ++i )
-    {
-        if( shortcuts[i].subDir )
-        {
-            runIconsThreads( *shortcuts[i].subDir );
-        }
-
-        ++iconThreadsNum;
-
-        QFutureWatcher<QImage> *watcher = new QFutureWatcher<QImage>(this); // NOLINT(clang-analyzer-cplusplus.NewDeleteLeaks)
-
-        // 2. Connect the finished signal back to the main GUI thread
-        connect(watcher, &QFutureWatcher<QImage>::finished, this, [this, watcher, &shortcuts, i]() {
-            // Get the generated image safely on the main thread
-            QImage loadedImage = watcher->result();
-
-            if (!loadedImage.isNull()) {
-                // Convert to QPixmap and set the icon safely on the GUI thread
-                shortcuts[i].icon=QPixmap::fromImage(loadedImage);
-
-                --iconThreadsNum;
-
-                if( &this->shortcuts == &shortcuts ) {
-                    ((HoverButton *)(this->gridLayout->itemAtPosition(i, 1)->widget()))->setIcon( shortcuts[i].icon );
-                }
-
-                if( iconThreadsNum == 0 )
-                {
-                    setWindowIcon(QIcon( config->iconPath ));
-                }
-            }
-
-            // Clean up the watcher memory automatically
-            watcher->deleteLater();
-        });
-
-        // 3. Fire off the thread task using a lambda
-        QFuture<QImage> future = QtConcurrent::run([&shortcuts, i, this]() {
-            // --- RUNNING ON BACKGROUND THREAD ---
-            QFileInfo fileInfo(shortcuts[i].path);
-            QFileIconProvider provider;
-            QIcon tempIcon = provider.icon(fileInfo);
-            return tempIcon.pixmap(QSize(config->iconSize, config->iconSize)).toImage();
-            // ------------------------------------
-        });
-
-        // 4. Assign the future to the watcher to kick off the monitoring process
-        watcher->setFuture(future);
-    }
-}
-
 void MenuStop::showVersionDialog() {
     VersionDialog *dialog = new VersionDialog(this);
     dialog->exec();
@@ -278,8 +224,6 @@ void MenuStop::showVersionDialog() {
 
     this->minimizeApp();
 }
-
-
 
 void MenuStop::checkFilesForShortcuts(const QString &path, QVector<Lnk> &shortcuts) {
     QDir directory(path);

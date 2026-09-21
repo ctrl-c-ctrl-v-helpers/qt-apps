@@ -11,7 +11,7 @@
 #include <QDirIterator>
 #include <QGridLayout>
 #include <QPushButton>
-#include <QDesktopServices>
+
 #include <QUrl>
 #include <algorithm>
 #include <QKeyEvent>
@@ -28,6 +28,7 @@
 #include <QFuture>
 #include <QtConcurrent>
 #include <QMessageBox>
+#include "commonwindowlogic.h"
 
 
 MenuStop::MenuStop(QWidget *parent)
@@ -36,7 +37,6 @@ MenuStop::MenuStop(QWidget *parent)
     , subDirWindow( nullptr )
     , subDirId(-1)
     , iconThreadsNum(0)
-    , activatedByCtrlSpace(true)
     , ctrlSpaceRegistered(false)
 {
     QString configPath;
@@ -83,7 +83,7 @@ MenuStop::MenuStop(QWidget *parent)
 
     QTimer::singleShot(3000, this, [this]() {
         this->showMinimized();
-        this->activatedByCtrlSpace = false;
+        this->config->activatedByCtrlSpace = false;
     });
 
     connect(qApp, &QApplication::focusChanged, this, [this](QWidget *old, QWidget *now) {
@@ -96,7 +96,7 @@ MenuStop::MenuStop(QWidget *parent)
                     subDirId=-1;
                 }
                 this->showMinimized();
-                this->activatedByCtrlSpace = false;
+                this->config->activatedByCtrlSpace = false;
             }
         });
     });
@@ -122,7 +122,7 @@ bool MenuStop::nativeEvent(const QByteArray &eventType, void *message, qintptr *
 
                 if( this->isMinimized() || this->isHidden() )
                 {
-                    this->activatedByCtrlSpace = true;
+                    this->config->activatedByCtrlSpace = true;
 
                     HWND hwnd = (HWND)this->winId();
 
@@ -143,7 +143,7 @@ bool MenuStop::nativeEvent(const QByteArray &eventType, void *message, qintptr *
                 else
                 {
                     this->showMinimized();
-                    this->activatedByCtrlSpace = false;
+                    this->config->activatedByCtrlSpace = false;
                 }
                 return true; // Zwracamy true, aby skrót nie szedł dalej do systemu
             }
@@ -205,35 +205,9 @@ void MenuStop::populateGrid() {
                                    "QPushButton:hover { background-color: %3; color: %4; }")
                                .arg(config->menuColorBorder, config->menuColorText, config->menuColorHover, config->menuColorTextHover));
 
-        QObject::connect(btn, &QPushButton::clicked, [this, i]() {
-            QDesktopServices::openUrl(QUrl::fromLocalFile(shortcuts[i].path));
-            this->showMinimized();
-            this->activatedByCtrlSpace = false;
-        });
-        QObject::connect(btn, &HoverButton::mouseEntered, this, [this, i, btn]() {
-            if( subDirId != i )
-            {
-                if( subDirWindow )
-                {
-                    subDirWindow->closeUpwards();
-                    subDirWindow=nullptr;
-                    subDirId=-1;
-                }
-                if( shortcuts[i].subDir )
-                {
-                    QPoint pos = btn->mapToGlobal(QPoint(btn->width(), btn->height()));
-                    subDirWindow = new SubDirWindow(*shortcuts[i].subDir, config, pos, this);
-                    subDirWindow->setAttribute(Qt::WA_DeleteOnClose);
-                    subDirWindow->populateGrid();
+        createClickedLambda( btn, this, i );
 
-                    subDirWindow->show();
-                    subDirWindow->raise();
-                    subDirWindow->activateWindow();
-
-                    subDirId=i;
-                }
-            }
-        });
+        createMouseEnteredLambda( btn, this, i );
 
         gridLayout->addWidget(btn, i, 1);
     }
@@ -301,7 +275,7 @@ void MenuStop::showVersionDialog() {
     delete dialog; // Safe layout cleanup immediately after closure
 
     this->showMinimized();
-    this->activatedByCtrlSpace = false;
+    this->config->activatedByCtrlSpace = false;
 }
 
 
@@ -365,12 +339,8 @@ void MenuStop::checkFilesForShortcuts(const QString &path, QVector<Lnk> &shortcu
 }
 
 void MenuStop::requestCloseChild()
-{
-    if (subDirWindow) {
-        subDirWindow->closeUpwards();
-        subDirWindow = nullptr;
-        subDirId = -1;
-    }
+{ 
+    doRequestCloseChild(this);
 }
 
 
@@ -380,22 +350,18 @@ void MenuStop::changeEvent(QEvent *event)
     if (event->type() == QEvent::ActivationChange) {
         if (!this->isActiveWindow()) {
 
-
-            // CHECK THE FOCUS OWNER: Find out which window took the focus
             QWidget *activeWin = QApplication::activeWindow();
 
-            // Prevent minimizing if a subDirWindow is open, OR if the focus
-            // belongs to our new modal version popup dialog box
             bool isOurPopup = (activeWin && activeWin->parent() == this && activeWin->inherits("QDialog"));
 
             if (!subDirWindow && !isOurPopup) {
                 this->showMinimized();
-                this->activatedByCtrlSpace = false;
+                this->config->activatedByCtrlSpace = false;
             }
         }
         else
         {
-            if( activatedByCtrlSpace )
+            if( config->activatedByCtrlSpace )
             {
                 QPoint cursorGlobalPos = QCursor::pos();
                 QRect screen;
@@ -463,7 +429,7 @@ void MenuStop::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_Escape)
     {
         this->showMinimized();
-        this->activatedByCtrlSpace = false;
+        this->config->activatedByCtrlSpace = false;
     }
     else if( event->key() == Qt::Key_Q)
     {
@@ -489,20 +455,6 @@ void MenuStop::keyPressEvent(QKeyEvent *event) {
             HoverButton *button = qobject_cast<HoverButton*>(focusedWidget);
             if (button) {
                 button->click(); // Wywoła sygnał clicked() podpięty do tego przycisku
-                event->accept();
-                return;
-            }
-        }
-    }
-    else if(event->key() == Qt::Key_Right)
-    {
-        QWidget *focusedWidget = QApplication::focusWidget();
-
-        if (focusedWidget) {
-
-            HoverButton *button = qobject_cast<HoverButton*>(focusedWidget);
-            if (button) {
-                button->enterEvent( nullptr ); // Wywoła sygnał clicked() podpięty do tego przycisku
                 event->accept();
                 return;
             }

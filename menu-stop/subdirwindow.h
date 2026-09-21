@@ -25,7 +25,7 @@ public:
 protected:
     void keyPressEvent(QKeyEvent *event) override;
 
-private:
+public:
     void setupUi();
     SubDirWindow * subDirWindow;
     QVector<Lnk> & shortcuts;

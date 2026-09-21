@@ -6,6 +6,7 @@
 #include <QDesktopServices>
 #include <QApplication>
 #include <QStyle>
+#include "commonwindowlogic.h"
 
 
 SubDirWindow::SubDirWindow(QVector<Lnk> & shortc, Config *configuration, QPoint leftBottom, QWidget *parent)
@@ -40,11 +41,11 @@ void SubDirWindow::populateGrid() {
 
         if( !shortcuts[i].icon.isNull() )
         {
-        btn->setIcon( shortcuts[i].icon );
+            btn->setIcon( shortcuts[i].icon );
         }
         else
         {
-        btn->setIcon( style()->standardIcon(QStyle::SP_FileDialogContentsView));
+            btn->setIcon( style()->standardIcon(QStyle::SP_FileDialogContentsView));
         }
         btn->setIconSize(QSize(config->iconSize, config->iconSize));
         btn->setFocusPolicy(Qt::StrongFocus);
@@ -52,35 +53,10 @@ void SubDirWindow::populateGrid() {
                                    "QPushButton:hover { background-color: %3; color: %4; }")
                                .arg(config->menuColorBorder, config->menuColorText, config->menuColorHover, config->menuColorTextHover));
 
-        QObject::connect(btn, &QPushButton::clicked, [this, i]() {
-            QDesktopServices::openUrl(QUrl::fromLocalFile(shortcuts[i].path));
-            const QWidgetList widgets = QApplication::topLevelWidgets();
-            for (QWidget *widget : widgets) {
-                if (widget->isWindow()) { widget->showMinimized(); }
-            }
-        });
+        createClickedLambda( btn, this, i );
 
-        QObject::connect(btn, &HoverButton::mouseEntered, this, [this, i, btn]() {
-            if( subDirId != i ) {
-                if( subDirWindow ) {
-                    subDirWindow->closeUpwards();
-                    subDirWindow=nullptr;
-                    subDirId=-1;
-                }
-                if( shortcuts[i].subDir ) {
-                    QPoint pos = btn->mapToGlobal(QPoint(btn->width(), btn->height()));
-                    subDirWindow = new SubDirWindow(*shortcuts[i].subDir, config, pos, this);
-                    subDirWindow->setAttribute(Qt::WA_DeleteOnClose);
-                    subDirWindow->populateGrid();
+        createMouseEnteredLambda( btn, this, i );
 
-                    subDirWindow->show();
-                    subDirWindow->raise();
-                    subDirWindow->activateWindow();
-
-                    subDirId=i;
-                }
-            }
-        });
         gridLayout->addWidget(btn, i, 0);
     }
     mainLayout->addLayout(gridLayout);
@@ -117,11 +93,7 @@ void SubDirWindow::populateGrid() {
 
 void SubDirWindow::requestCloseChild()
 {
-    if (subDirWindow) {
-        subDirWindow->closeUpwards();
-        subDirWindow = nullptr;
-        subDirId = -1;
-    }
+    doRequestCloseChild(this);
 }
 
 void SubDirWindow::closeUpwards()

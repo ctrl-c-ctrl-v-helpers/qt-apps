@@ -22,7 +22,7 @@ public:
     QString menuColorBackground;
     QString menuColorBorder;
 
-
+    bool activatedByCtrlSpace;
 };
 
 #endif // CONFIG_H

@@ -18,6 +18,7 @@ public:
     // Nadpisujemy zdarzenia wejścia i wyjścia myszy
     void enterEvent(QEnterEvent *event) override;
     void leaveEvent(QEvent *event) override;
+    void keyRightPressed();
 
 signals:
     // Sygnał, który wyemitujemy, gdy mysz najedzie na przycisk
@@ -25,7 +26,6 @@ signals:
     void mouseLeft();
 
 protected:
-    void keyPressEvent(QKeyEvent *event) override;
 
 };
 

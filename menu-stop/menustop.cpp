@@ -73,9 +73,6 @@ MenuStop::MenuStop(QWidget *parent)
 
     populateGrid();
 
-    setWindowTitle(QString("\u200B"));
-    setWindowIcon(QIcon( config->iconPath ));
-
     this->setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
     this->setStyleSheet(QString("QMainWindow { border: 1px solid %1; background-color: %2}").arg(config->menuColorBorder, config->menuColorBackground));
 
@@ -84,6 +81,9 @@ MenuStop::MenuStop(QWidget *parent)
 
 
     QTimer::singleShot(3000, this, [this]() {
+        setWindowTitle(QString("\u200B"));
+        setWindowIcon(QIcon( config->iconPath ));
+
         this->minimizeApp();
     });
 

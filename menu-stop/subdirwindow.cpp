@@ -71,17 +71,7 @@ void SubDirWindow::populateGrid() {
         int screenRight = currentScreen->availableGeometry().right();
         int parentWidth = 0;
 
-        QWidget *parentWidget = this->parentWidget();
-
-        SubDirWindow *parentSubDir = qobject_cast<SubDirWindow*>(parentWidget);
-        if (parentSubDir) {
-            parentWidth = parentSubDir->width();
-        }
-
-        MenuStop *mainMenu = qobject_cast<MenuStop*>(parentWidget);
-        if (mainMenu) {
-            parentWidth = mainMenu->width();
-        }
+        CALL_ON_PARENT_RETVAL( this, parentWidth, width() );
 
         if( reversedExpansion == false )
         {

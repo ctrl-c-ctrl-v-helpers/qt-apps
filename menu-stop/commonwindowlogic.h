@@ -10,6 +10,25 @@
 #include <QStyle>
 
 
+#define CALL_ON_PARENT_VOID( INSTANCE, METHOD ) \
+do { \
+        QWidget *parentWidget = INSTANCE->parentWidget(); \
+        SubDirWindow *parentSubDir = qobject_cast<SubDirWindow*>(parentWidget); \
+        if (parentSubDir) { parentSubDir->METHOD; } \
+        MenuStop *mainMenu = qobject_cast<MenuStop*>(parentWidget); \
+        if (mainMenu) { mainMenu->METHOD; } \
+} while( 0 )
+
+#define CALL_ON_PARENT_RETVAL( INSTANCE, RETVAL, METHOD ) \
+do { \
+        QWidget *parentWidget = INSTANCE->parentWidget(); \
+        SubDirWindow *parentSubDir = qobject_cast<SubDirWindow*>(parentWidget); \
+        if (parentSubDir) { RETVAL=parentSubDir->METHOD; } \
+        MenuStop *mainMenu = qobject_cast<MenuStop*>(parentWidget); \
+        if (mainMenu) { RETVAL=mainMenu->METHOD; } \
+} while( 0 )
+
+
 
 
 template <typename T>
@@ -179,17 +198,8 @@ bool processKeyPressEvent(QKeyEvent *event, T *that)
     }
     else if( event->key() == Qt::Key_Left )
     {
-        QWidget *parentWidget = that->parentWidget();
 
-        SubDirWindow *parentSubDir = qobject_cast<SubDirWindow*>(parentWidget);
-        if (parentSubDir) {
-            parentSubDir->requestCloseChild(); // Czyści i zamyka to okno z poziomu wyższego podmenu
-        }
-
-        MenuStop *mainMenu = qobject_cast<MenuStop*>(parentWidget);
-        if (mainMenu) {
-            mainMenu->requestCloseChild(); // Czyści i zamyka to okno z poziomu menu głównego
-        }
+        CALL_ON_PARENT_VOID( that, requestCloseChild() );
 
         event->accept();
         return true;

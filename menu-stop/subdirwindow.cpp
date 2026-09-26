@@ -69,6 +69,7 @@ void SubDirWindow::populateGrid() {
         }
 
         int screenRight = currentScreen->availableGeometry().right();
+        int screenLeft = currentScreen->availableGeometry().left();
         int parentWidth = 0;
 
         CALL_ON_PARENT_RETVAL( this, parentWidth, width() );
@@ -84,7 +85,7 @@ void SubDirWindow::populateGrid() {
         }
         else
         {
-            if( x - this->width() - parentWidth < 0 )
+            if( x - this->width() - parentWidth < screenLeft )
             {
                 reversedExpansion = false;
             }

@@ -8,6 +8,9 @@
 #include "QDebug"
 #include "QApplication"
 #include <QStyle>
+#include <QCoreApplication>
+#include <QFileInfo>
+#include <QProcess>
 
 
 #define CALL_ON_PARENT_VOID( INSTANCE, METHOD ) \
@@ -37,16 +40,22 @@ HoverButton * getButtonAtPosition( T *that )
 }
 
 template <typename T>
+void minimizeAll(T *that)
+{
+    const QWidgetList widgets = QApplication::topLevelWidgets();
+    for (QWidget *widget : widgets) {
+        if (widget->isWindow()) { widget->showMinimized(); }
+    }
+    that->config->keyboardControl = false;
+    that->config->xPosInvalid = true;
+}
+
+template <typename T>
 void createClickedLambda( HoverButton *btn, T *that, int i )
 {
     QObject::connect(btn, &QPushButton::clicked, [that, i]() {
         QDesktopServices::openUrl(QUrl::fromLocalFile(that->shortcuts[i].path));
-        const QWidgetList widgets = QApplication::topLevelWidgets();
-        for (QWidget *widget : widgets) {
-            if (widget->isWindow()) { widget->showMinimized(); }
-        }
-        that->config->keyboardControl = false;
-        that->config->xPosInvalid = true;
+        minimizeAll( that );
     });
 
 }
@@ -144,7 +153,6 @@ void unHoverKbd(T *that)
     }
 }
 
-
 template <typename T>
 bool processKeyPressEvent(QKeyEvent *event, T *that)
 {
@@ -239,6 +247,25 @@ bool processKeyPressEvent(QKeyEvent *event, T *that)
     else if (event->key() == Qt::Key_Q)
     {
         qApp->quit(); // Natychmiastowe, bezpieczne wyjście z aplikacji
+        return true;
+    }
+    else if (event->key() == Qt::Key_G)
+    {
+        QString shortcutPath = that->shortcuts[that->hoveredButtonId].path;
+        QString targetPath = QFileInfo( shortcutPath ).symLinkTarget();
+        if( targetPath == "" )
+        {
+            targetPath = shortcutPath;
+        }
+
+        QFileInfo targetInfo(targetPath);
+        if (targetInfo.isDir()) {
+
+            QString gitBashPath = "C:/Program Files/Git/git-bash.exe";
+            QProcess::startDetached(gitBashPath, QStringList(), targetPath);
+
+            minimizeAll( that );
+        }
         return true;
     }
 

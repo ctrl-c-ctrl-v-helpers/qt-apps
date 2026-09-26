@@ -45,7 +45,8 @@ void createClickedLambda( HoverButton *btn, T *that, int i )
         for (QWidget *widget : widgets) {
             if (widget->isWindow()) { widget->showMinimized(); }
         }
-        that->config->activatedByCtrlSpace = false;
+        that->config->keyboardControl = false;
+        that->config->xPosInvalid = true;
     });
 
 }
@@ -83,7 +84,7 @@ void createMouseEnteredLambda( HoverButton *btn, T *that, int i )
 {
     QObject::connect(btn, &HoverButton::mouseEntered, that, [that, i, btn]() {
 
-        that->config->activatedByCtrlSpace = false;
+        that->config->keyboardControl = false;
         if( that->hoveredButtonId != -1 )
         {
             HoverButton *btn = buttonAtPosition( that );
@@ -209,7 +210,7 @@ bool processKeyPressEvent(QKeyEvent *event, T *that)
             btn->setStyleSheet( that->config->buttonStyleKbdHover );
         }
 
-        that->config->activatedByCtrlSpace = true;
+        that->config->keyboardControl = true;
         HoverButton *btn = buttonAtPosition( that );
         expandSubWindow( btn, that, that->hoveredButtonId );
 

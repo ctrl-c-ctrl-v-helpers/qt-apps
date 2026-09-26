@@ -31,7 +31,7 @@ Config::Config(QString configPath) {
     menuColorBackgroundHoverKbd = settings.value("Settings/MenuColorBackgroundHoverKbd", "").toString();
 
 
-    activatedByCtrlSpace = true;
+    keyboardControl = true;
 
     buttonStyleNormal = QString("QPushButton { text-align: left; padding: 10px; border: 1px solid %1; background: transparent; color: %2}"
                                 )
@@ -44,6 +44,8 @@ Config::Config(QString configPath) {
     buttonStyleKbdHover = QString("QPushButton { text-align: left; padding: 10px; border: 1px solid %1; background-color: %2; color: %3}"
                                 )
                             .arg(menuColorBorder, menuColorBackgroundHoverKbd, menuColorTextHoverKbd);
+
+    xPosInvalid = true;
 
 }
 

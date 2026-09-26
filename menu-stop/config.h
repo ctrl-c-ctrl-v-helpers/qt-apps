@@ -25,11 +25,14 @@ public:
     QString menuColorTextHoverKbd;
     QString menuColorBackgroundHoverKbd;
 
-    bool activatedByCtrlSpace;
+    bool keyboardControl;
 
     QString buttonStyleNormal;
     QString buttonStyleKbdHover;
     QString buttonStyleMouseHover;
+
+    int xPosInvalid;
+
 };
 
 #endif // CONFIG_H

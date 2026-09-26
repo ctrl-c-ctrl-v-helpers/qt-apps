@@ -39,6 +39,7 @@ MenuStop::MenuStop(QWidget *parent)
     , hoveredButtonId(-1)
     , buttonsColumnId( 1 )
     , reversedExpansion( false )
+    , activatedByHotkey( false )
 {
     QString configPath;
     QStringList args = QCoreApplication::arguments();
@@ -123,7 +124,8 @@ bool MenuStop::nativeEvent(const QByteArray &eventType, void *message, qintptr *
 
                 if( this->isMinimized() || this->isHidden() )
                 {
-                    this->config->activatedByCtrlSpace = true;
+                    this->config->keyboardControl = true;
+                    activatedByHotkey = true;
 
                     HWND hwnd = (HWND)this->winId();
 
@@ -151,6 +153,7 @@ bool MenuStop::nativeEvent(const QByteArray &eventType, void *message, qintptr *
                 else
                 {
                     this->minimizeApp();
+                    this->requestCloseChild();
                 }
                 return true; // Zwracamy true, aby skrót nie szedł dalej do systemu
             }
@@ -164,7 +167,8 @@ bool MenuStop::nativeEvent(const QByteArray &eventType, void *message, qintptr *
 void MenuStop::minimizeApp()
 {
     unHoverKbd( this );
-    this->config->activatedByCtrlSpace = false;
+    this->config->keyboardControl = false;
+    this->config->xPosInvalid = true;
     this->showMinimized();
 }
 
@@ -304,46 +308,51 @@ void MenuStop::changeEvent(QEvent *event)
         }
         else
         {
-            if( config->activatedByCtrlSpace )
+            if( config->xPosInvalid )
             {
-                QPoint cursorGlobalPos = QCursor::pos();
-                QRect screen;
-
-                QList<QScreen*> screens = QGuiApplication::screens();
-                if( screens.size() == 1 )
+                if( activatedByHotkey )
                 {
-                    screen = screens.at(0)->availableGeometry();
+                    QPoint cursorGlobalPos = QCursor::pos();
+                    QRect screen;
+
+                    QList<QScreen*> screens = QGuiApplication::screens();
+                    if( screens.size() == 1 )
+                    {
+                        screen = screens.at(0)->availableGeometry();
+                    }
+                    else
+                    {
+                        for (int i = 0; i < screens.size(); ++i) {
+                            QRect availableGeometry = screens.at(i)->availableGeometry();
+                            if( ! ( availableGeometry.contains(cursorGlobalPos) ) )
+                            {
+                                screen = availableGeometry;
+                            }
+                        }
+                    }
+
+                    int screenHeight = screen.height();
+                    int screenTop = screen.top();
+
+                    int topLeftX = getXPos( screen.left() + config->windowOffsetX );
+                    int topLeftY = screenTop + screenHeight - this->height() - config->windowOffsetY;
+                    this->move(topLeftX, topLeftY);
+                    config->xPosInvalid = false;
                 }
                 else
                 {
-                    for (int i = 0; i < screens.size(); ++i) {
-                        QRect availableGeometry = screens.at(i)->availableGeometry();
-                        if( ! ( availableGeometry.contains(cursorGlobalPos) ) )
-                        {
-                            screen = availableGeometry;
+                    if( ! underMouse() ) {
+                        QPoint cursorGlobalPos = QCursor::pos();
+                        QScreen *screenAtCursor = QGuiApplication::screenAt(cursorGlobalPos);
+                        if (screenAtCursor) {
+                            int screenHeight = screenAtCursor->availableGeometry().height();
+                            int screenTop = screenAtCursor->availableGeometry().top();
+
+                            int topLeftX = getXPos( cursorGlobalPos.x() );
+                            int topLeftY = screenTop + screenHeight - this->height() - config->windowOffsetY;
+                            this->move(topLeftX, topLeftY);
+                            config->xPosInvalid = false;
                         }
-                    }
-                }
-
-                int screenHeight = screen.height();
-                int screenTop = screen.top();
-
-                int topLeftX = getXPos( screen.left() + config->windowOffsetX );
-                int topLeftY = screenTop + screenHeight - this->height() - config->windowOffsetY;
-                this->move(topLeftX, topLeftY);
-            }
-            else
-            {
-                if( ! underMouse() ) {
-                    QPoint cursorGlobalPos = QCursor::pos();
-                    QScreen *screenAtCursor = QGuiApplication::screenAt(cursorGlobalPos);
-                    if (screenAtCursor) {
-                        int screenHeight = screenAtCursor->availableGeometry().height();
-                        int screenTop = screenAtCursor->availableGeometry().top();
-
-                        int topLeftX = getXPos( cursorGlobalPos.x() );
-                        int topLeftY = screenTop + screenHeight - this->height() - config->windowOffsetY;
-                        this->move(topLeftX, topLeftY);
                     }
                 }
             }

@@ -67,5 +67,7 @@ public:
 
     bool reversedExpansion;
 
+    bool activatedByHotkey;
+
 };
 #endif // MENUSTOP_H

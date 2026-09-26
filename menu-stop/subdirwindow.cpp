@@ -42,7 +42,7 @@ void SubDirWindow::populateGrid() {
     for( int i=0; i<shortcuts.size(); ++i ) {
         HoverButton *btn = createHoverButton( this, i );
 
-        if( config->activatedByCtrlSpace && i == shortcuts.size()-1 )
+        if( config->keyboardControl && i == shortcuts.size()-1 )
         {
             btn->setStyleSheet(this->config->buttonStyleKbdHover);
             this->hoveredButtonId = shortcuts.size()-1;
@@ -142,6 +142,9 @@ void SubDirWindow::keyPressEvent(QKeyEvent *event) {
                 if (widget->isWindow()) { widget->showMinimized(); }
             }
             event->accept();
+            this->config->xPosInvalid = true;
+            this->config->keyboardControl = false;
+
             return;
         }
 

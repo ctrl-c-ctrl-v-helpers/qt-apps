@@ -36,7 +36,7 @@ MenuStop::MenuStop(QWidget *parent)
     , subDirId(-1)
     , iconThreadsNum(0)
     , ctrlSpaceRegistered(false)
-    , kbdHoverId(-1)
+    , hoveredButtonId(-1)
     , buttonsColumnId( 1 )
     , reversedExpansion( false )
 {
@@ -141,9 +141,9 @@ bool MenuStop::nativeEvent(const QByteArray &eventType, void *message, qintptr *
                     // 3. Poinformuj Qt o zmianie stanu, aby zaktualizowało focus komponentów wewnątrz okna
                     this->raise();
 
-                    kbdHoverId = gridLayout->rowCount()-1;
+                    hoveredButtonId = gridLayout->rowCount()-1;
                     HoverButton *btn = qobject_cast<HoverButton *>(gridLayout->itemAtPosition(
-                                                                                 kbdHoverId, buttonsColumnId
+                                                                                 hoveredButtonId, buttonsColumnId
                                                                                  )->widget());
                     btn->setStyleSheet( config->buttonStyleKbdHover );
 

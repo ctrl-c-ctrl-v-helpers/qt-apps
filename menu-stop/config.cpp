@@ -34,12 +34,16 @@ Config::Config(QString configPath) {
     activatedByCtrlSpace = true;
 
     buttonStyleNormal = QString("QPushButton { text-align: left; padding: 10px; border: 1px solid %1; background: transparent; color: %2}"
-                                "QPushButton:hover { background-color: %3; color: %4; }")
-                            .arg(menuColorBorder, menuColorText, menuColorBackgroundHover, menuColorTextHover);
+                                )
+                            .arg(menuColorBorder, menuColorText);
 
-    buttonStyleKbdHover = QString("QPushButton { text-align: left; padding: 10px; border: 1px solid %1; background-color: %5; color: %2}"
-                                "QPushButton:hover { background-color: %3; color: %4; }")
-                            .arg(menuColorBorder, menuColorTextHoverKbd, menuColorBackgroundHover, menuColorTextHover, menuColorBackgroundHoverKbd);
+    buttonStyleMouseHover = QString("QPushButton { text-align: left; padding: 10px; border: 1px solid %1; background-color: %2; color: %3}"
+                                  )
+                              .arg(menuColorBorder, menuColorBackgroundHover, menuColorTextHover);
+
+    buttonStyleKbdHover = QString("QPushButton { text-align: left; padding: 10px; border: 1px solid %1; background-color: %2; color: %3}"
+                                )
+                            .arg(menuColorBorder, menuColorBackgroundHoverKbd, menuColorTextHoverKbd);
 
 }
 

@@ -29,6 +29,7 @@ public:
 
     QString buttonStyleNormal;
     QString buttonStyleKbdHover;
+    QString buttonStyleMouseHover;
 };
 
 #endif // CONFIG_H

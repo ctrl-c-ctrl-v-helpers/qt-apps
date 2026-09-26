@@ -59,7 +59,7 @@ public:
 
     const int ID_CTRL_SPACE = 1002;
 
-    int kbdHoverId;
+    int hoveredButtonId;
 
     bool ctrlSpaceRegistered;
 

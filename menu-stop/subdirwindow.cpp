@@ -16,7 +16,7 @@ SubDirWindow::SubDirWindow(QVector<Lnk> & shortc, Config *configuration, QPoint 
     , config(configuration)
     , leftBottomCorner( leftBottom )
     , subDirId(-1)
-    , kbdHoverId(-1)
+    , hoveredButtonId(-1)
     , buttonsColumnId( 0 )
     , reversedExpansion( reversedExpand )
 {
@@ -45,7 +45,7 @@ void SubDirWindow::populateGrid() {
         if( config->activatedByCtrlSpace && i == shortcuts.size()-1 )
         {
             btn->setStyleSheet(this->config->buttonStyleKbdHover);
-            this->kbdHoverId = shortcuts.size()-1;
+            this->hoveredButtonId = shortcuts.size()-1;
         }
 
         gridLayout->addWidget(btn, i, buttonsColumnId);

@@ -32,7 +32,7 @@ public:
     Config *config;
     QPoint leftBottomCorner;
     int subDirId;
-    int kbdHoverId;
+    int hoveredButtonId;
     int buttonsColumnId;
     QGridLayout *gridLayout;
     bool reversedExpansion;

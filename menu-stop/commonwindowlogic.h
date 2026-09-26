@@ -28,8 +28,13 @@ do { \
         if (mainMenu) { RETVAL=mainMenu->METHOD; } \
 } while( 0 )
 
-
-
+template <typename T>
+HoverButton * buttonAtPosition( T *that )
+{
+    return qobject_cast<HoverButton *>(that->gridLayout->itemAtPosition(
+                                                                       that->hoveredButtonId, that->buttonsColumnId
+                                                                       )->widget());
+}
 
 template <typename T>
 void createClickedLambda( HoverButton *btn, T *that, int i )
@@ -46,32 +51,51 @@ void createClickedLambda( HoverButton *btn, T *that, int i )
 }
 
 template <typename T>
+void expandSubWindow( HoverButton *btn, T *that, int i )
+{
+    if( that->subDirId != i )
+    {
+        if( that->subDirWindow )
+        {
+            that->subDirWindow->closeUpwards();
+            that->subDirWindow=nullptr;
+            that->subDirId=-1;
+        }
+        if( that->shortcuts[i].subDir )
+        {
+            QPoint pos = btn->mapToGlobal(QPoint(btn->width(), btn->height()));
+            that->subDirWindow = new SubDirWindow(*(that->shortcuts[i].subDir), that->config, pos, that->reversedExpansion, that);
+            that->subDirWindow->setAttribute(Qt::WA_DeleteOnClose);
+            that->subDirWindow->populateGrid();
+
+            that->subDirWindow->show();
+            that->subDirWindow->raise();
+            that->subDirWindow->activateWindow();
+
+            that->subDirId=i;
+        }
+    }
+}
+
+
+template <typename T>
 void createMouseEnteredLambda( HoverButton *btn, T *that, int i )
 {
-
     QObject::connect(btn, &HoverButton::mouseEntered, that, [that, i, btn]() {
-        if( that->subDirId != i )
+
+        that->config->activatedByCtrlSpace = false;
+        if( that->hoveredButtonId != -1 )
         {
-            if( that->subDirWindow )
-            {
-                that->subDirWindow->closeUpwards();
-                that->subDirWindow=nullptr;
-                that->subDirId=-1;
-            }
-            if( that->shortcuts[i].subDir )
-            {
-                QPoint pos = btn->mapToGlobal(QPoint(btn->width(), btn->height()));
-                that->subDirWindow = new SubDirWindow(*(that->shortcuts[i].subDir), that->config, pos, that->reversedExpansion, that);
-                that->subDirWindow->setAttribute(Qt::WA_DeleteOnClose);
-                that->subDirWindow->populateGrid();
-
-                that->subDirWindow->show();
-                that->subDirWindow->raise();
-                that->subDirWindow->activateWindow();
-
-                that->subDirId=i;
-            }
+            HoverButton *btn = buttonAtPosition( that );
+            btn->setStyleSheet( that->config->buttonStyleNormal );
         }
+
+        that->hoveredButtonId = i;
+
+        HoverButton *btn = buttonAtPosition( that );
+        btn->setStyleSheet( that->config->buttonStyleMouseHover );
+
+        expandSubWindow( btn, that, i );
     });
 }
 
@@ -111,13 +135,11 @@ void doRequestCloseChild(T *that)
 template <typename T>
 void unHoverKbd(T *that)
 {
-    if( that->kbdHoverId != -1 )
+    if( that->hoveredButtonId != -1 )
     {
-        HoverButton *btn = qobject_cast<HoverButton *>(that->gridLayout->itemAtPosition(
-                                                                           that->kbdHoverId, that->buttonsColumnId
-                                                                           )->widget());
+        HoverButton *btn = buttonAtPosition( that );
         btn->setStyleSheet( that->config->buttonStyleNormal );
-        that->kbdHoverId = -1;
+        that->hoveredButtonId = -1;
     }
 }
 
@@ -127,30 +149,26 @@ bool processKeyPressEvent(QKeyEvent *event, T *that)
 {
     if( event->key() == Qt::Key_Up )
     {
-        if( that->kbdHoverId != -1 )
+        if( that->hoveredButtonId != -1 )
         {
-            HoverButton *btn = qobject_cast<HoverButton *>(that->gridLayout->itemAtPosition(
-                                                   that->kbdHoverId, that->buttonsColumnId
-                                                                               )->widget());
+            HoverButton *btn = buttonAtPosition( that );
             btn->setStyleSheet( that->config->buttonStyleNormal );
 
-            if( that->kbdHoverId == 0 )
+            if( that->hoveredButtonId == 0 )
             {
-                that->kbdHoverId = that->gridLayout->rowCount()-1;
+                that->hoveredButtonId = that->gridLayout->rowCount()-1;
             }
             else
             {
-                --that->kbdHoverId;
+                --that->hoveredButtonId;
             }
         }
         else
         {
-            that->kbdHoverId = that->gridLayout->rowCount()-1;
+            that->hoveredButtonId = that->gridLayout->rowCount()-1;
         }
 
-        HoverButton *btn = qobject_cast<HoverButton *>(that->gridLayout->itemAtPosition(
-                                                                           that->kbdHoverId, that->buttonsColumnId
-                                                                           )->widget());
+        HoverButton *btn = buttonAtPosition( that );
         btn->setStyleSheet( that->config->buttonStyleKbdHover );
 
         event->accept();
@@ -158,43 +176,43 @@ bool processKeyPressEvent(QKeyEvent *event, T *that)
     }
     else if( event->key() == Qt::Key_Down )
     {
-        if( that->kbdHoverId != -1 )
+        if( that->hoveredButtonId != -1 )
         {
-            HoverButton *btn = qobject_cast<HoverButton *>(that->gridLayout->itemAtPosition(
-                                                                               that->kbdHoverId, that->buttonsColumnId
-                                                                               )->widget());
+            HoverButton *btn = buttonAtPosition( that );
             btn->setStyleSheet( that->config->buttonStyleNormal );
 
-            if( that->kbdHoverId == that->gridLayout->rowCount()-1 )
+            if( that->hoveredButtonId == that->gridLayout->rowCount()-1 )
             {
-                that->kbdHoverId = 0;
+                that->hoveredButtonId = 0;
             }
             else
             {
-                ++that->kbdHoverId;
+                ++that->hoveredButtonId;
             }
         }
         else
         {
-            that->kbdHoverId = 0;
+            that->hoveredButtonId = 0;
         }
 
-        HoverButton *btn = qobject_cast<HoverButton *>(that->gridLayout->itemAtPosition(
-                                                                           that->kbdHoverId, that->buttonsColumnId
-                                                                           )->widget());
+        HoverButton *btn = buttonAtPosition( that );
         btn->setStyleSheet( that->config->buttonStyleKbdHover );
 
         event->accept();
         return true;
     }
     else if( event->key() == Qt::Key_Right ) {
-        if( that->kbdHoverId != -1 )
+        if( that->hoveredButtonId == -1 )
         {
-            HoverButton *btn = qobject_cast<HoverButton *>(that->gridLayout->itemAtPosition(
-                                                                               that->kbdHoverId, that->buttonsColumnId
-                                                                               )->widget());
-            btn->keyRightPressed();
+            that->hoveredButtonId = that->gridLayout->rowCount()-1;
+            HoverButton *btn = buttonAtPosition( that );
+            btn->setStyleSheet( that->config->buttonStyleKbdHover );
         }
+
+        that->config->activatedByCtrlSpace = true;
+        HoverButton *btn = buttonAtPosition( that );
+        expandSubWindow( btn, that, that->hoveredButtonId );
+
     }
     else if( event->key() == Qt::Key_Left )
     {
@@ -206,11 +224,9 @@ bool processKeyPressEvent(QKeyEvent *event, T *that)
     }
     else if(event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
     {
-        if( that->kbdHoverId != -1 )
+        if( that->hoveredButtonId != -1 )
         {
-            HoverButton *btn = qobject_cast<HoverButton *>(that->gridLayout->itemAtPosition(
-                                                                               that->kbdHoverId, that->buttonsColumnId
-                                                                               )->widget());
+            HoverButton *btn = buttonAtPosition( that );
             btn->click();
         }
         event->accept();

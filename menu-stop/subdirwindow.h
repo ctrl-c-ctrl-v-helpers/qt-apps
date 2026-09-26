@@ -9,6 +9,7 @@
 #include <QPushButton>
 #include "lnk.h"
 #include "config.h"
+#include "hoverbutton.h"
 
 class SubDirWindow : public QDialog
 {
@@ -36,6 +37,8 @@ public:
     int buttonsColumnId;
     QGridLayout *gridLayout;
     bool reversedExpansion;
+
+    HoverButton * buttonAtPosition();
 };
 
 #endif // MYFRAMELESSWINDOW_H

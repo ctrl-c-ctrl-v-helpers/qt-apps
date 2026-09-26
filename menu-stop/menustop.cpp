@@ -94,11 +94,6 @@ MenuStop::MenuStop(QWidget *parent)
             QTimer::singleShot(1000, this, [this]() {
                 // Podwójne sprawdzenie dla bezpieczeństwa
                 if (QApplication::activeWindow() == nullptr) {
-                    if (subDirWindow) {
-                        subDirWindow->closeUpwards();
-                        subDirWindow = nullptr;
-                        subDirId = -1;
-                    }
                     this->minimizeApp();
                 }
             });
@@ -169,6 +164,7 @@ void MenuStop::minimizeApp()
     unHoverKbd( this );
     this->config->keyboardControl = false;
     this->config->xPosInvalid = true;
+    this->requestCloseChild();
     this->showMinimized();
 }
 
@@ -228,6 +224,11 @@ void MenuStop::showVersionDialog() {
     delete dialog; // Safe layout cleanup immediately after closure
 
     this->minimizeApp();
+}
+
+HoverButton *MenuStop::buttonAtPosition()
+{
+    return getButtonAtPosition( this );
 }
 
 void MenuStop::checkFilesForShortcuts(const QString &path, QVector<Lnk> &shortcuts) {

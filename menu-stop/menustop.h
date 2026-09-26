@@ -9,6 +9,7 @@
 #include "subdirwindow.h"
 #include "config.h"
 #include <windows.h>
+#include "hoverbutton.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -68,6 +69,8 @@ public:
     bool reversedExpansion;
 
     bool activatedByHotkey;
+
+    HoverButton * buttonAtPosition();
 
 };
 #endif // MENUSTOP_H

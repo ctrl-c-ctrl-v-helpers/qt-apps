@@ -132,6 +132,11 @@ void SubDirWindow::closeUpwards()
     }
 }
 
+HoverButton *SubDirWindow::buttonAtPosition()
+{
+    return getButtonAtPosition( this );
+}
+
 void SubDirWindow::keyPressEvent(QKeyEvent *event) {
     if( ! processKeyPressEvent( event, this ))
     {

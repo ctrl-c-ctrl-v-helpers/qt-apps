@@ -29,7 +29,7 @@ do { \
 } while( 0 )
 
 template <typename T>
-HoverButton * buttonAtPosition( T *that )
+HoverButton * getButtonAtPosition( T *that )
 {
     return qobject_cast<HoverButton *>(that->gridLayout->itemAtPosition(
                                                                        that->hoveredButtonId, that->buttonsColumnId
@@ -87,13 +87,13 @@ void createMouseEnteredLambda( HoverButton *btn, T *that, int i )
         that->config->keyboardControl = false;
         if( that->hoveredButtonId != -1 )
         {
-            HoverButton *btn = buttonAtPosition( that );
+            HoverButton *btn = getButtonAtPosition( that );
             btn->setStyleSheet( that->config->buttonStyleNormal );
         }
 
         that->hoveredButtonId = i;
 
-        HoverButton *btn = buttonAtPosition( that );
+        HoverButton *btn = getButtonAtPosition( that );
         btn->setStyleSheet( that->config->buttonStyleMouseHover );
 
         expandSubWindow( btn, that, i );
@@ -138,7 +138,7 @@ void unHoverKbd(T *that)
 {
     if( that->hoveredButtonId != -1 )
     {
-        HoverButton *btn = buttonAtPosition( that );
+        HoverButton *btn = getButtonAtPosition( that );
         btn->setStyleSheet( that->config->buttonStyleNormal );
         that->hoveredButtonId = -1;
     }
@@ -152,7 +152,7 @@ bool processKeyPressEvent(QKeyEvent *event, T *that)
     {
         if( that->hoveredButtonId != -1 )
         {
-            HoverButton *btn = buttonAtPosition( that );
+            HoverButton *btn = getButtonAtPosition( that );
             btn->setStyleSheet( that->config->buttonStyleNormal );
 
             if( that->hoveredButtonId == 0 )
@@ -169,7 +169,7 @@ bool processKeyPressEvent(QKeyEvent *event, T *that)
             that->hoveredButtonId = that->gridLayout->rowCount()-1;
         }
 
-        HoverButton *btn = buttonAtPosition( that );
+        HoverButton *btn = getButtonAtPosition( that );
         btn->setStyleSheet( that->config->buttonStyleKbdHover );
 
         event->accept();
@@ -179,7 +179,7 @@ bool processKeyPressEvent(QKeyEvent *event, T *that)
     {
         if( that->hoveredButtonId != -1 )
         {
-            HoverButton *btn = buttonAtPosition( that );
+            HoverButton *btn = getButtonAtPosition( that );
             btn->setStyleSheet( that->config->buttonStyleNormal );
 
             if( that->hoveredButtonId == that->gridLayout->rowCount()-1 )
@@ -196,7 +196,7 @@ bool processKeyPressEvent(QKeyEvent *event, T *that)
             that->hoveredButtonId = 0;
         }
 
-        HoverButton *btn = buttonAtPosition( that );
+        HoverButton *btn = getButtonAtPosition( that );
         btn->setStyleSheet( that->config->buttonStyleKbdHover );
 
         event->accept();
@@ -206,12 +206,12 @@ bool processKeyPressEvent(QKeyEvent *event, T *that)
         if( that->hoveredButtonId == -1 )
         {
             that->hoveredButtonId = that->gridLayout->rowCount()-1;
-            HoverButton *btn = buttonAtPosition( that );
+            HoverButton *btn = getButtonAtPosition( that );
             btn->setStyleSheet( that->config->buttonStyleKbdHover );
         }
 
         that->config->keyboardControl = true;
-        HoverButton *btn = buttonAtPosition( that );
+        HoverButton *btn = getButtonAtPosition( that );
         expandSubWindow( btn, that, that->hoveredButtonId );
 
     }
@@ -219,6 +219,9 @@ bool processKeyPressEvent(QKeyEvent *event, T *that)
     {
 
         CALL_ON_PARENT_VOID( that, requestCloseChild() );
+        HoverButton *btn;
+        CALL_ON_PARENT_RETVAL( that, btn, buttonAtPosition() );
+        btn->setStyleSheet( that->config->buttonStyleKbdHover );
 
         event->accept();
         return true;
@@ -227,7 +230,7 @@ bool processKeyPressEvent(QKeyEvent *event, T *that)
     {
         if( that->hoveredButtonId != -1 )
         {
-            HoverButton *btn = buttonAtPosition( that );
+            HoverButton *btn = getButtonAtPosition( that );
             btn->click();
         }
         event->accept();

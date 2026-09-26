@@ -47,6 +47,8 @@ Config::Config(QString configPath) {
 
     xPosInvalid = true;
 
+    preferMainScreen = settings.value("Settings/PreferMainScreen", false).toBool();
+
 }
 
 

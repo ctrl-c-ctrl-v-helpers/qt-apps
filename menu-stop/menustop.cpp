@@ -139,9 +139,7 @@ bool MenuStop::nativeEvent(const QByteArray &eventType, void *message, qintptr *
                     this->raise();
 
                     hoveredButtonId = gridLayout->rowCount()-1;
-                    HoverButton *btn = qobject_cast<HoverButton *>(gridLayout->itemAtPosition(
-                                                                                 hoveredButtonId, buttonsColumnId
-                                                                                 )->widget());
+                    HoverButton *btn = buttonAtPosition();
                     btn->setStyleSheet( config->buttonStyleKbdHover );
 
                 }
@@ -313,21 +311,28 @@ void MenuStop::changeEvent(QEvent *event)
             {
                 if( activatedByHotkey )
                 {
-                    QPoint cursorGlobalPos = QCursor::pos();
                     QRect screen;
 
-                    QList<QScreen*> screens = QGuiApplication::screens();
-                    if( screens.size() == 1 )
+                    if( config->preferMainScreen )
                     {
-                        screen = screens.at(0)->availableGeometry();
+                        screen = QGuiApplication::primaryScreen()->availableGeometry();
                     }
                     else
                     {
-                        for (int i = 0; i < screens.size(); ++i) {
-                            QRect availableGeometry = screens.at(i)->availableGeometry();
-                            if( ! ( availableGeometry.contains(cursorGlobalPos) ) )
-                            {
-                                screen = availableGeometry;
+                        QPoint cursorGlobalPos = QCursor::pos();
+                        QList<QScreen*> screens = QGuiApplication::screens();
+                        if( screens.size() == 1 )
+                        {
+                            screen = screens.at(0)->availableGeometry();
+                        }
+                        else
+                        {
+                            for (int i = 0; i < screens.size(); ++i) {
+                                QRect availableGeometry = screens.at(i)->availableGeometry();
+                                if( ! ( availableGeometry.contains(cursorGlobalPos) ) )
+                                {
+                                    screen = availableGeometry;
+                                }
                             }
                         }
                     }

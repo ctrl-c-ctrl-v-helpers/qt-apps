@@ -33,6 +33,8 @@ public:
 
     int xPosInvalid;
 
+    bool preferMainScreen;
+
 };
 
 #endif // CONFIG_H

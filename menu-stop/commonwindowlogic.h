@@ -227,9 +227,12 @@ bool processKeyPressEvent(QKeyEvent *event, T *that)
     {
 
         CALL_ON_PARENT_VOID( that, requestCloseChild() );
-        HoverButton *btn;
+        HoverButton *btn = nullptr;
         CALL_ON_PARENT_RETVAL( that, btn, buttonAtPosition() );
-        btn->setStyleSheet( that->config->buttonStyleKbdHover );
+        if( btn )
+        {
+            btn->setStyleSheet( that->config->buttonStyleKbdHover );
+        }
 
         event->accept();
         return true;

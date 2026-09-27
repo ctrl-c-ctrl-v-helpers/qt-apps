@@ -36,7 +36,6 @@ void Lnk::reLink( QString rePath )
 {
     if( rePath.endsWith(".txtlnk", Qt::CaseInsensitive) )
     {
-        qDebug() << rePath;
         QSettings fileSettings(path + rePath, QSettings::IniFormat);
 
         QString targetPath = fileSettings.value("TextShortcut/TargetPath").toString();

@@ -34,13 +34,26 @@ Lnk::Lnk( QString shortcutPath, int iconSz )
 
 void Lnk::reLink( QString rePath )
 {
-    path += rePath;
-    QFileInfo fileInfo(path);
+    if( rePath.endsWith(".txtlnk", Qt::CaseInsensitive) )
+    {
+        qDebug() << rePath;
+        QSettings fileSettings(path + rePath, QSettings::IniFormat);
 
-    QFileIconProvider provider;
-    QIcon tempIcon = provider.icon(fileInfo);
-    QPixmap rawPixmap = tempIcon.pixmap(QSize(iconSize, iconSize));
-    icon = QPixmap::fromImage(rawPixmap.toImage());
+        QString targetPath = fileSettings.value("TextShortcut/TargetPath").toString();
+        QString iconPath   = fileSettings.value("TextShortcut/PngIconPath").toString();
+        icon = QPixmap( iconPath ).scaled(QSize(iconSize, iconSize));
+        path = targetPath;
+    }
+    else
+    {
+        path += rePath;
+        QFileInfo fileInfo(path);
+
+        QFileIconProvider provider;
+        QIcon tempIcon = provider.icon(fileInfo);
+        QPixmap rawPixmap = tempIcon.pixmap(QSize(iconSize, iconSize));
+        icon = QPixmap::fromImage(rawPixmap.toImage());
+    }
 }
 
 Lnk::Lnk(const Lnk &other)

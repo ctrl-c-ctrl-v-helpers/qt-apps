@@ -239,7 +239,7 @@ void MenuStop::checkFilesForShortcuts(const QString &path, QVector<Lnk> &shortcu
         if (
             ( fileInfo.isShortcut() || fileInfo.isDir() || fileInfo.absoluteFilePath().endsWith(".txtlnk", Qt::CaseInsensitive))
             and
-            ( not fileInfo.absoluteFilePath().endsWith("SELF-LINK.lnk", Qt::CaseInsensitive) )
+            ( (not fileInfo.absoluteFilePath().endsWith("SELF-LINK.lnk", Qt::CaseInsensitive)) and (not fileInfo.absoluteFilePath().endsWith("SELF-LINK.txtlnk", Qt::CaseInsensitive)) )
             )
         {
 
@@ -259,6 +259,11 @@ void MenuStop::checkFilesForShortcuts(const QString &path, QVector<Lnk> &shortcu
                     s.name += "     🞂";
                 }
 
+                QFileInfo selfTxtLink( fileInfo.absoluteFilePath() + "/SELF-LINK.txtlnk" );
+                if( selfTxtLink.isFile() )
+                {
+                    s.reLink( "/SELF-LINK.txtlnk" );
+                }
                 QFileInfo selfLink( fileInfo.absoluteFilePath() + "/SELF-LINK.lnk" );
                 if( selfLink.isShortcut() )
                 {

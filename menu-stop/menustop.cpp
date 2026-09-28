@@ -141,7 +141,6 @@ bool MenuStop::nativeEvent(const QByteArray &eventType, void *message, qintptr *
                     hoveredButtonId = gridLayout->rowCount()-1;
                     HoverButton *btn = buttonAtPosition();
                     btn->setStyleSheet( config->buttonStyleKbdHover );
-
                 }
                 else
                 {
@@ -161,6 +160,7 @@ void MenuStop::minimizeApp()
 {
     unHoverKbd( this );
     this->config->keyboardControl = false;
+    activatedByHotkey = false;
     this->config->xPosInvalid = true;
     this->requestCloseChild();
     this->showMinimized();

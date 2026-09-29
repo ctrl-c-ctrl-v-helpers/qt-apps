@@ -6,52 +6,68 @@
 #include <QDebug>
 #include <QSettings>
 
-Lnk::Lnk( QString shortcutPath, int iconSz )
-    : path(shortcutPath)
-    , subDir( NULL )
-    , iconSize (iconSz )
+namespace {
+class ShortcutData
 {
-    QFileInfo fileInfo(shortcutPath);
-    name=fileInfo.completeBaseName();
-
-    if( fileInfo.absoluteFilePath().endsWith(".txtlnk", Qt::CaseInsensitive) )
+public:
+    ShortcutData( QString shortcutPath, int iconSize )
     {
-        QSettings fileSettings(shortcutPath, QSettings::IniFormat);
+        QFileInfo fileInfo(shortcutPath);
+        name  = fileInfo.completeBaseName();
 
-        QString targetPath = fileSettings.value("TextShortcut/TargetPath").toString();
-        QString iconPath   = fileSettings.value("TextShortcut/PngIconPath").toString();
-        icon = QPixmap( iconPath ).scaled(QSize(iconSize, iconSize));
-        path = targetPath;
+        if( fileInfo.absoluteFilePath().endsWith(".txtlnk", Qt::CaseInsensitive) )
+        {
+            QSettings fileSettings(shortcutPath, QSettings::IniFormat);
+            path = fileSettings.value("TextShortcut/TargetPath").toString();
+
+            QString iconPath = fileSettings.value("TextShortcut/PngIconPath").toString();
+            icon = QPixmap( iconPath ).scaled(QSize(iconSize, iconSize));
+        }
+        else
+        {
+            path = shortcutPath;
+
+            QFileIconProvider provider;
+            QIcon tempIcon = provider.icon(fileInfo);
+            QPixmap rawPixmap = tempIcon.pixmap(QSize(iconSize, iconSize));
+            icon = QPixmap::fromImage(rawPixmap.toImage());
+        }
     }
-    else
-    {
-        QFileIconProvider provider;
-        QIcon tempIcon = provider.icon(fileInfo);
-        QPixmap rawPixmap = tempIcon.pixmap(QSize(iconSize, iconSize));
-        icon = QPixmap::fromImage(rawPixmap.toImage());
-    }
+
+    QString path;
+    QPixmap icon;
+    QString name;
+};
+}//namespace
+
+Lnk::Lnk( QString shortcutPath, int iconSz )
+    : subDir( nullptr )
+    , iconSize( iconSz )
+{
+    ShortcutData sd( shortcutPath, iconSize );
+
+    name=sd.name;
+    path=sd.path;
+    icon=sd.icon;
 }
 
 void Lnk::reLink( QString rePath )
 {
-    if( rePath.endsWith(".txtlnk", Qt::CaseInsensitive) )
-    {
-        QSettings fileSettings(path + rePath, QSettings::IniFormat);
+    QString selfLinkPath = path + rePath;
 
-        QString targetPath = fileSettings.value("TextShortcut/TargetPath").toString();
-        QString iconPath   = fileSettings.value("TextShortcut/PngIconPath").toString();
-        icon = QPixmap( iconPath ).scaled(QSize(iconSize, iconSize));
-        path = targetPath;
-    }
-    else
-    {
-        path += rePath;
-        QFileInfo fileInfo(path);
+    ShortcutData sd( selfLinkPath, iconSize );
 
-        QFileIconProvider provider;
-        QIcon tempIcon = provider.icon(fileInfo);
-        QPixmap rawPixmap = tempIcon.pixmap(QSize(iconSize, iconSize));
-        icon = QPixmap::fromImage(rawPixmap.toImage());
+    path=sd.path;
+    icon=sd.icon;
+}
+
+void Lnk::removeThreeDashesFromName()
+{
+    QStringList parts = name.split("---");
+
+    if (parts.size() > 1) {
+        parts.removeAt(0);
+        name = parts.join("---");
     }
 }
 

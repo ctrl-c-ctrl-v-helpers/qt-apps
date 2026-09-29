@@ -21,6 +21,7 @@ public:
     QVector<Lnk> * subDir;
     void reLink( QString rePath );
     int iconSize;
+    void removeThreeDashesFromName();
 };
 
 #endif // LNK_H

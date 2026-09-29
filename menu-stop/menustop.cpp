@@ -280,12 +280,7 @@ void MenuStop::checkFilesForShortcuts(const QString &path, QVector<Lnk> &shortcu
 
     for( int i=0; i<shortcuts.size(); ++i )
     {
-        QStringList parts = shortcuts[i].name.split("---");
-
-        if (parts.size() > 1) {
-            parts.removeAt(0);
-            shortcuts[i].name = parts.join("---");
-        }
+        shortcuts[i].removeThreeDashesFromName();
         shortcuts[i].name += "     ";
     }
 }

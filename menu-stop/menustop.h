@@ -10,6 +10,7 @@
 #include "config.h"
 #include <windows.h>
 #include "hoverbutton.h"
+#include <QIcon>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -71,6 +72,9 @@ public:
     bool activatedByHotkey;
 
     HoverButton * buttonAtPosition();
+
+    QIcon icon;
+    QIcon iconClicked;
 
 };
 #endif // MENUSTOP_H

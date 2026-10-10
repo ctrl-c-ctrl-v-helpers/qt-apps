@@ -82,8 +82,11 @@ MenuStop::MenuStop(QWidget *parent)
 
 
     QTimer::singleShot(3000, this, [this]() {
+        icon = QIcon( config->iconPath );
+        iconClicked = QIcon( config->iconClickedPath );
+
         setWindowTitle(QString("\u200B"));
-        setWindowIcon(QIcon( config->iconPath ));
+        setWindowIcon(icon);
 
         this->minimizeApp();
     });
@@ -141,7 +144,7 @@ bool MenuStop::nativeEvent(const QByteArray &eventType, void *message, qintptr *
                     hoveredButtonId = gridLayout->rowCount()-1;
                     HoverButton *btn = buttonAtPosition();
                     btn->setStyleSheet( config->buttonStyleKbdHover );
-                    setWindowIcon(QIcon( config->iconClickedPath ));
+                    setWindowIcon(iconClicked);
                 }
                 else
                 {
@@ -165,7 +168,7 @@ void MenuStop::minimizeApp()
     this->config->xPosInvalid = true;
     this->requestCloseChild();
     this->showMinimized();
-    setWindowIcon(QIcon( config->iconPath ));
+    setWindowIcon(icon);
 }
 
 MenuStop::~MenuStop()
@@ -361,7 +364,7 @@ void MenuStop::changeEvent(QEvent *event)
                             this->move(topLeftX, topLeftY);
                             config->xPosInvalid = false;
                         }
-                        setWindowIcon(QIcon( config->iconClickedPath ));
+                        setWindowIcon(iconClicked);
                     }
                 }
             }

@@ -14,6 +14,7 @@ Config::Config(QString configPath) {
     iconSize = settings.value("Settings/IconSize", 24).toInt();
 
     iconPath =  settings.value("Settings/Icon", "").toString();
+    iconClickedPath =  settings.value("Settings/IconClicked", iconPath).toString();
 
     menuName = settings.value("Settings/MenuName", "").toString();
 

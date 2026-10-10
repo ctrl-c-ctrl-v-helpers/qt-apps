@@ -141,6 +141,7 @@ bool MenuStop::nativeEvent(const QByteArray &eventType, void *message, qintptr *
                     hoveredButtonId = gridLayout->rowCount()-1;
                     HoverButton *btn = buttonAtPosition();
                     btn->setStyleSheet( config->buttonStyleKbdHover );
+                    setWindowIcon(QIcon( config->iconClickedPath ));
                 }
                 else
                 {
@@ -164,6 +165,7 @@ void MenuStop::minimizeApp()
     this->config->xPosInvalid = true;
     this->requestCloseChild();
     this->showMinimized();
+    setWindowIcon(QIcon( config->iconPath ));
 }
 
 MenuStop::~MenuStop()
@@ -359,6 +361,7 @@ void MenuStop::changeEvent(QEvent *event)
                             this->move(topLeftX, topLeftY);
                             config->xPosInvalid = false;
                         }
+                        setWindowIcon(QIcon( config->iconClickedPath ));
                     }
                 }
             }

@@ -10,6 +10,7 @@ public:
 
     QString dirPath;
     QString iconPath;
+    QString iconClickedPath;
     QString menuName;
     int windowOffsetY;
     int windowOffsetX;
